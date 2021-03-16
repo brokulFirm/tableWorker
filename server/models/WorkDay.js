@@ -3,10 +3,11 @@ const { Schema } = mongoose;
 
 const WorkDay = new Schema({
   _id: String,
+  name: String,
+  lastName: String,
+  shift: String,
+  rate: Number,
   month: String,
-  countDay: {
-    type: Number,
-    default: 0
-  }
+  countDay: [String]
 });
 module.exports = mongoose.model("WorkDay", WorkDay);

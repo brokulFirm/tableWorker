@@ -1,10 +1,46 @@
 <template>
-  <div class="allShifts">allshifts</div>
+  <div class="allShifts">
+    <HeaderTable />
+    <SummaryTable :Workers="getShift" />
+  </div>
 </template>
 
 <script>
+import HeaderTable from "../components/HeaderTable";
+import SummaryTable from "../components/allshifts/SummaryTable";
+import { mapActions, mapGetters } from "vuex";
 export default {
   name: "AllShifts",
-  components: {}
+  components: {
+    HeaderTable,
+    SummaryTable,
+  },
+  created() {
+    this.getWorkersInYear();
+    this.setShift("AllShift");
+  },
+  methods: {
+    ...mapActions(["getWorkersInYear", "setShift"]),
+  },
+  computed: {
+    ...mapGetters(["getState"]),
+    getShift() {
+      let workers;
+      if (this.getState.shift === "Day") {
+        workers = this.getState.workDayInYear.workers.filter((i) => {
+          return i.shift == "Dzień";
+        });
+        return workers;
+      } else if (this.getState.shift === "Night") {
+        workers = this.getState.workDayInYear.workers.filter((i) => {
+          return i.shift == "Noc";
+        });
+        return workers;
+      } else if (this.getState.shift === "AllShift") {
+        workers = this.getState.workDayInYear.workers;
+      }
+      return workers;
+    },
+  },
 };
 </script>

@@ -4,8 +4,10 @@ const { Schema } = mongoose;
 const Worker = new Schema({
   name: String,
   lastName: String,
-  startDate: Date,
+  startDate: String,
   rate: Number,
-  shift: String
+  shift: String,
+  number: String,
+  medicalBoard: String
 });
 module.exports = mongoose.model("Worker", Worker);

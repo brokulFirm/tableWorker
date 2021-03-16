@@ -1,22 +1,35 @@
 <template>
   <div class="night">
     <HeaderTable />
-    <Table :getWorkers="getState.worker.workers" />
+    <Table :Workers="getShift" :shift="getState.shift" />
   </div>
 </template>
 
 <script>
 import HeaderTable from "../components/HeaderTable";
-import Table from "../components/night/Table";
-import { mapGetters } from "vuex";
+import Table from "../components/Table";
+import { mapActions, mapGetters } from "vuex";
 export default {
   name: "Night",
   components: {
     HeaderTable,
-    Table
+    Table,
+  },
+  created() {
+    this.getWorkers();
+    this.setShift("Night");
+  },
+  methods: {
+    ...mapActions(["getWorkers", "setShift"]),
   },
   computed: {
-    ...mapGetters(["getState"])
-  }
+    ...mapGetters(["getState"]),
+    getShift() {
+      let workers = this.getState.worker.workers.filter((i) => {
+        return i.shift == "Noc";
+      });
+      return workers;
+    },
+  },
 };
 </script>

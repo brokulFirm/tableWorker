@@ -1,18 +1,26 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import worker from "./worker/worker";
-import workDay from "./workDay/workDay";
 import workDayInYear from "./workDayInYear/workDayInYear";
 
 Vue.use(Vuex);
-
+Vue.config.devtools = true;
 export default new Vuex.Store({
-  state: {},
-  mutations: {},
-  actions: {},
+  state: {
+    shift: ""
+  },
+  mutations: {
+    changeShift(state, payload) {
+      state.shift = payload;
+    }
+  },
+  actions: {
+    setShift({ commit }, payload) {
+      commit("changeShift", payload);
+    }
+  },
   modules: {
     worker,
-    workDay,
     workDayInYear
   },
   getters: {
