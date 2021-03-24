@@ -6,7 +6,7 @@
       :search="search"
       sort-by="name"
       class="elevation-2"
-      item-key="name"
+      item-key="_id"
     >
       <template v-slot:top>
         <div class="headerTable">
@@ -128,7 +128,7 @@ export default {
       },
       {
         text: "Stawkę (zł)",
-        value: "rate",
+        value: "monthRate",
         sortable: false,
         align: "center",
       },
@@ -299,15 +299,17 @@ export default {
           worker.year == this.selectedDate.split("-")[0] &&
           worker.month[this.selectedDate.split("-")[1]]
         ) {
-          let day = worker.month[this.selectedDate.split("-")[1]].length;
+          let day =
+            worker.month[this.selectedDate.split("-")[1]].countDay.length;
+          let rate = worker.month[this.selectedDate.split("-")[1]].monthRate;
           this.workers.push({
             _id: worker._id,
             name: worker.name,
             lastName: worker.lastName,
             shift: worker.shift,
-            rate: worker.rate,
+            monthRate: rate,
             countDay: day,
-            salary: Number(day) * Number(worker.rate),
+            salary: Number(day) * Number(rate),
           });
         }
       }

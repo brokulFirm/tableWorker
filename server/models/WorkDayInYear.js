@@ -10,4 +10,9 @@ const WorkDayInYear = new Schema({
   year: String,
   month: {}
 });
-module.exports = mongoose.model("WorkDayInYear", WorkDayInYear);
+module.exports = mongoose.model(
+  "WorkDayInYear",
+  WorkDayInYear,
+  "testworkdayinyears"
+);
+//УБРАТЬ ТЕСТЫ ПРИ СБОРКЕ НА ПРОДАКШН

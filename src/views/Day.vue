@@ -1,7 +1,11 @@
 <template>
   <div class="day">
     <HeaderTable />
-    <Table :Workers="getShift" :shift="getState.shift" />
+    <Table
+      :Workers="getShift"
+      :shift="getState.shift"
+      :submitStatus="getState.worker.submitStatus"
+    />
   </div>
 </template>
 

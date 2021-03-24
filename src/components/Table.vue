@@ -7,9 +7,19 @@
       :search="search"
       sort-by="name"
       class="elevation-1"
+      show-expand
       show-select
       item-key="_id"
+      single-expand
+      :expanded.sync="expanded"
     >
+      <template v-slot:expanded-item="{ headers, item }">
+        <td class="pa-3" :colspan="headers.length">
+          <h5>Wybierz date urlopu dla {{ item.name + " " + item.lastName }}</h5>
+          <input type="date" />
+          <input type="date" />
+        </td>
+      </template>
       <template v-slot:top>
         <div class="headerTable">
           <v-toolbar flat>
@@ -40,53 +50,73 @@
                 </v-card-title>
                 <v-card-text>
                   <v-container>
-                    <v-row>
-                      <v-col cols="12" sm="6" md="4">
-                        <v-text-field
-                          v-model="editedItem.name"
-                          label="Imię"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="6" md="4">
-                        <v-text-field
-                          v-model="editedItem.lastName"
-                          label="Nazwisko"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="6" md="4">
-                        <v-text-field
-                          v-model="editedItem.number"
-                          label="Numer telefonu"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col v-if="!redactMode" cols="12" sm="6" md="4">
-                        <v-text-field
-                          v-model="selectedDate"
-                          label="Paczątek pracy"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="6" md="4">
-                        <v-text-field
-                          v-model="editedItem.rate"
-                          label="Stawkę"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="6" md="4">
-                        <v-text-field
-                          v-model="editedItem.medicalBoard"
-                          label="Badania san.epid."
-                          hint="rrrr-mm-dd"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
+                    <v-form ref="form" v-model="valid">
+                      <v-row>
+                        <v-col cols="12" sm="6" md="4">
+                          <v-text-field
+                            v-model="editedItem.name"
+                            :rules="nameRules"
+                            label="Imię"
+                          ></v-text-field>
+                        </v-col>
+                        <v-col cols="12" sm="6" md="4">
+                          <v-text-field
+                            v-model="editedItem.lastName"
+                            :rules="nameRules"
+                            label="Nazwisko"
+                          ></v-text-field>
+                        </v-col>
+                        <v-col cols="12" sm="6" md="4">
+                          <v-text-field
+                            v-model="editedItem.number"
+                            :counter="9"
+                            :rules="numberRules"
+                            label="Numer telefonu"
+                          ></v-text-field>
+                        </v-col>
+                        <v-col cols="12" sm="6" md="4">
+                          <v-text-field
+                            v-if="!redactMode"
+                            v-model="selectedDate"
+                            label="Paczątek pracy"
+                          ></v-text-field>
+                          <v-text-field
+                            v-else
+                            v-model="editedItem.startDate"
+                            label="Paczątek pracy"
+                          ></v-text-field>
+                        </v-col>
+                        <v-col cols="12" sm="6" md="4">
+                          <v-text-field
+                            type="number"
+                            v-model="editedItem.rate"
+                            label="Stawkę"
+                          ></v-text-field>
+                        </v-col>
+                        <v-col cols="12" sm="6" md="4">
+                          <v-text-field
+                            v-model="editedItem.medicalBoard"
+                            label="Badania san.epid."
+                            hint="rrrr-mm-dd"
+                          ></v-text-field>
+                        </v-col>
+                      </v-row>
+                    </v-form>
                   </v-container>
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer></v-spacer>
                   <v-btn color="blue darken-1" text @click="close">
-                    Cancel
+                    Anuluj
                   </v-btn>
-                  <v-btn color="blue darken-1" text @click="save"> Save </v-btn>
+                  <v-btn
+                    color="blue darken-1"
+                    :disabled="!valid"
+                    text
+                    @click="save"
+                  >
+                    Zapisać
+                  </v-btn>
                 </v-card-actions>
               </v-card>
             </v-dialog>
@@ -101,7 +131,7 @@
                 <v-card-actions>
                   <v-spacer></v-spacer>
                   <v-btn color="blue darken-1" text @click="closeDelete"
-                    >Cancel</v-btn
+                    >Anuluj</v-btn
                   >
                   <v-btn color="blue darken-1" text @click="deleteItemConfirm"
                     >OK</v-btn
@@ -146,7 +176,6 @@
       <template v-slot:no-data>
         <v-progress-linear indeterminate color="cyan"></v-progress-linear>
         <v-col class="subtitle-1 text-center" cols="12"> Czekaj... </v-col>
-        <v-btn color="primary" @click="initialize"> Uruchom ponownie </v-btn>
       </template>
     </v-data-table>
 
@@ -160,18 +189,34 @@
           {{ output.join(", ") }}
         </v-alert>
       </div>
-      <div class="mt-5">
-        <v-btn color="primary" elevation="2" large rounded @click="confirmDay"
+      <TodoList />
+      <div>
+        <v-alert
+          v-if="alertText"
+          border="left"
+          outlined
+          text
+          :type="alertType"
+          >{{ alertText }}</v-alert
+        >
+        <v-btn
+          class="mt-1"
+          :disabled="disComfirm"
+          color="primary"
+          elevation="2"
+          large
+          rounded
+          @click="confirmDay"
           >Zatwierdź dzień</v-btn
         >
       </div>
     </div>
-    <v-snackbar v-model="snackbar" :timeout="3000">
+    <v-snackbar :color="snackbarType" text v-model="snackbar" :timeout="3000">
       {{ text }}
 
       <template v-slot:action="{ attrs }">
-        <v-btn color="pink" text v-bind="attrs" @click="snackbar = false">
-          Close
+        <v-btn color="red" text v-bind="attrs" @click="snackbar = false">
+          Zamkni
         </v-btn>
       </template>
     </v-snackbar>
@@ -179,11 +224,19 @@
 </template>
 <script>
 import { mapActions } from "vuex";
+import TodoList from "./TodoList";
 export default {
-  props: ["Workers", "shift"],
+  props: ["Workers", "shift", "submitStatus"],
+  components: { TodoList },
   data: () => ({
+    valid: true,
+    nameRules: [(v) => !!v || "Nie może być puste."],
+    numberRules: [(v) => v == Number(v) || "Tylko cyfry"],
+    alertType: "",
+    alertText: "",
     tableShift: "",
     snackbar: false,
+    snackbarType: "",
     text: "",
     redactMode: false,
     search: "",
@@ -192,8 +245,10 @@ export default {
     dates: [],
     monthName: "",
     selected: [],
+    expanded: [],
     output: [],
     selectedDate: "",
+    disComfirm: false,
     headers: [
       {
         text: "Imię",
@@ -205,11 +260,22 @@ export default {
         align: "start",
         value: "lastName",
       },
-      { text: "Numer Tel.", value: "number", sortable: false },
-      { text: "Data zatrudnienia", value: "startDate", sortable: false },
-      { text: "Badanie san.epid.", value: "medicalBoard", sortable: false },
-      { text: "Stawkę (zł)", value: "rate", sortable: false },
-      { text: "Edytuj", value: "actions", sortable: false },
+      { text: "Dodatkowa informacja", value: "data-table-expand" },
+      { text: "Numer Tel.", value: "number", sortable: false, align: "center" },
+      {
+        text: "Data zatrudnienia",
+        value: "startDate",
+        sortable: false,
+        align: "center",
+      },
+      {
+        text: "Badanie san.epid.",
+        value: "medicalBoard",
+        sortable: false,
+        align: "center",
+      },
+      { text: "Stawkę (zł)", value: "rate", sortable: false, align: "center" },
+      { text: "Edytuj", value: "actions", sortable: false, align: "center" },
     ],
     workers: [],
     editedIndex: -1,
@@ -284,25 +350,35 @@ export default {
       return nowMonth;
     },
   },
-  beforeUpdate() {
-    this.getOutput();
-  },
   watch: {
+    selected() {
+      this.getOutput();
+    },
+    submitStatus() {
+      this.disComfirm = false;
+      //Проверяем какой статус пришел из сервера. (Изменять type в дальнейшем)
+    },
     Workers() {
       this.initialize();
-      if (this.selected.length == 0) {
+      if (this.selected.length == 0 && this.Workers.length > 0) {
+        this.selected = this.workers;
+      }
+      if (this.selected.length > this.workers.length) {
         this.selected = this.workers;
       }
     },
     selectedDate() {
       this.monthName = this.getMonth;
+      this.alertText = "";
     },
     dialog(val) {
       val || this.close();
     },
     dialogDelete(val) {
       val || this.closeDelete();
-      this.selected = this.workers;
+      this.selected = this.selected.filter((i) => {
+        return i._id != this.editItem._id;
+      });
     },
   },
 
@@ -357,7 +433,12 @@ export default {
       this.dates = [nowDate, yestDate];
     },
     initialize() {
-      this.workers = this.Workers;
+      if (this.workers.length && this.workers.length < this.Workers.length) {
+        this.workers = this.Workers;
+        this.selected.push(this.Workers.reverse()[0]);
+      } else {
+        this.workers = this.Workers;
+      }
     },
 
     editItem(item) {
@@ -377,6 +458,7 @@ export default {
     deleteItemConfirm() {
       this.removeWorker(this.editedItem);
       this.text = "Usunełeś pracownika z tablicy!";
+      this.snackbarType = "warning";
       this.snackbar = true;
       this.closeDelete();
     },
@@ -398,23 +480,41 @@ export default {
       });
     },
 
-    save() {
+    async save() {
       if (this.editedIndex > -1) {
-        this.setWorker(this.editedItem);
-        this.text = "Dane pracownika zostali zmienione!!!";
-        this.snackbar = true;
+        this.$refs.form.validate();
+        await this.setWorker(this.editedItem);
+        if (this.submitStatus == "Success") {
+          this.snackbarType = "primary";
+          this.text = "Dane pracownika zostali zmienione!!!";
+          this.snackbar = true;
+        } else if (this.submitStatus == "Error") {
+          this.snackbarType = "error";
+          this.text = "Coś poszło nie tak, spróbój jescze raz";
+          this.snackbar = true;
+        }
+        this.getWorkers();
       } else {
         if (this.shift === "Day") this.editedItem.shift = "Dzień";
         if (this.shift === "Night") this.editedItem.shift = "Noc";
         this.editedItem.startDate = this.selectedDate;
-        this.addNewWorker(this.editedItem);
+        this.$refs.form.validate();
+        await this.addNewWorker(this.editedItem);
+        if (this.submitStatus == "Success") {
+          this.snackbarType = "success";
+          this.text = "Dodaleś nowego pracownika!!!";
+          this.snackbar = true;
+        } else if (this.submitStatus == "Error") {
+          this.snackbarType = "error";
+          this.text = "Coś poszło nie tak, spróbój jeszcze raz";
+          this.snackbar = true;
+        }
         this.getWorkers();
-        this.text = "Dodaleś nowego pracownika!!!";
-        this.snackbar = true;
       }
       this.close();
     },
-    confirmDay() {
+    async confirmDay() {
+      this.disComfirm = true;
       let arrCount = [];
       for (let elem of this.selected) {
         let workCount = {
@@ -429,7 +529,14 @@ export default {
         arrCount.push(workCount);
       }
 
-      this.addCountDay(arrCount);
+      await this.addCountDay(arrCount);
+      if (this.submitStatus == "Success") {
+        this.alertText = this.selectedDate + " " + "Dzień zatwierdzony";
+        this.alertType = "success";
+      } else if (this.submitStatus == "Error") {
+        this.alertText = "Coś poszło nie tak, spróbój uruchomić ponownie";
+        this.alertType = "error";
+      }
     },
   },
 };

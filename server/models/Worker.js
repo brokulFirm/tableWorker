@@ -10,4 +10,4 @@ const Worker = new Schema({
   number: String,
   medicalBoard: String
 });
-module.exports = mongoose.model("Worker", Worker);
+module.exports = mongoose.model("Worker", Worker, "testworkers"); //УБРАТЬ ТЕСТЫ ПРИ СБОРКЕ НА ПРОДАКШН

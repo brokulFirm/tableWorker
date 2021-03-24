@@ -1,4 +1,6 @@
-const hostName = "http://192.168.1.35:5050";
+require("dotenv").config();
+
+const hostName = process.env.VUE_APP_HOST + ":4040";
 
 import axios from "axios";
 

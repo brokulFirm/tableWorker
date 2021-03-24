@@ -2,6 +2,7 @@ const express = require("express");
 const routerWorkDayInYear = express.Router();
 
 const WorkDayInYear = require("../models/WorkDayInYear");
+const WorkDay = require("../models/WorkDay");
 
 //Настраиваем end point для Rest API
 routerWorkDayInYear.get("/", async (req, res) => {
@@ -17,6 +18,7 @@ routerWorkDayInYear.delete("/:id", async (req, res) => {
         console.log("Deleted");
       }
     });
+    await WorkDay.findByIdAndRemove(req.params.id, req.body);
     res.writeHead(200, "Deleted", { "Content-Type": "text/plain" });
     res.end();
   } catch {

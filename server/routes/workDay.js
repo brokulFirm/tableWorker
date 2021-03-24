@@ -24,7 +24,9 @@ routerWorkDay.post("/", async (req, res) => {
 
 //Разобраться с поиском и сравнением елементов в mongoose. Для того что бы добавлять новые елементы, если нету в БД
 routerWorkDay.put("/", async (req, res) => {
+  // console.log(req.body);
   let countDayInfo = await WorkDay.find();
+  let countRes = 0;
   try {
     for (let elem of req.body) {
       let countDayElem = countDayInfo.find(i => i._id == elem._id);
@@ -43,10 +45,7 @@ routerWorkDay.put("/", async (req, res) => {
             $push: { countDay: elem.countDay }
           });
         }
-        if (
-          !countDayElem.countDay.includes(elem.countDay) &&
-          countDayElem.month !== elem.month
-        ) {
+        if (countDayElem.month !== elem.month) {
           await WorkDay.findByIdAndUpdate(elem._id, {
             _id: elem._id,
             name: elem.name,
@@ -61,7 +60,9 @@ routerWorkDay.put("/", async (req, res) => {
         const record = new WorkDay(elem);
         await record.save();
       }
+      countRes += 1;
     }
+    console.log("Objects received---", countRes);
     res.writeHead(200, "Updated", { "Content-Type": "text/plain" });
     res.end();
   } catch {
@@ -86,7 +87,12 @@ let setYearInfo = async () => {
             { _id: i._id },
             {
               year: yearNow,
-              $set: { ["month." + monthNow]: i.countDay }
+              $set: {
+                ["month." + monthNow]: {
+                  monthRate: i.rate,
+                  countDay: i.countDay
+                }
+              }
             }
           );
         } else {
@@ -94,7 +100,12 @@ let setYearInfo = async () => {
             { _id: i._id },
             {
               year: yearNow,
-              month: { [monthNow]: i.countDay }
+              month: {
+                [monthNow]: {
+                  monthRate: i.rate,
+                  countDay: i.countDay
+                }
+              }
             }
           );
         }
@@ -104,9 +115,11 @@ let setYearInfo = async () => {
           name: i.name,
           lastName: i.lastName,
           shift: i.shift,
-          rate: i.rate,
           year: yearNow,
-          ["month." + monthNow]: i.countDay
+          ["month." + monthNow]: {
+            monthRate: i.rate,
+            countDay: i.countDay
+          }
         });
         await record.save();
       }

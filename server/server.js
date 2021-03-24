@@ -3,21 +3,18 @@ const mongoose = require("mongoose");
 const morgan = require("morgan");
 const path = require("path");
 const history = require("connect-history-api-fallback");
-
+require("dotenv").config();
 //!!!!Подключаться к API из приложения !!!!
 
 const app = express();
-const ip = "http://192.168.1.35";
-app.set("port", 5050);
+const ip = process.env.VUE_APP_HOST;
+app.set("port", 4040);
 //Подключаем базу данных перед запуском сервера
 mongoose
-  .connect(
-    "mongodb://brokul_firm:SBAMUvPZN9iu3Fb9@cluster0-shard-00-00.cv9nv.mongodb.net:27017,cluster0-shard-00-01.cv9nv.mongodb.net:27017,cluster0-shard-00-02.cv9nv.mongodb.net:27017/myFirstDatabase?ssl=true&replicaSet=atlas-a9kw9v-shard-0&authSource=admin&retryWrites=true&w=majority",
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    }
-  )
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
   .then(db => console.log("[OK] DB is connected"))
   .catch(err => console.error(err));
 //Подключаем  распознование  формата JSON

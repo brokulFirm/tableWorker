@@ -11,21 +11,21 @@ const routes = [
     component: Start
   },
   {
-    path: "/night",
+    path: "/12pkdzien23fa71br",
+    name: "Day",
+    component: () => import(/* webpackChunkName: "day" */ "../views/Day.vue")
+  },
+  {
+    path: "/25pknoc18qm34zj",
     name: "Night",
     component: () =>
       import(/* webpackChunkName: "night" */ "../views/Night.vue")
   },
   {
-    path: "/allshift",
+    path: "/72pkwynik2pz51vy296",
     name: "AllShifts",
     component: () =>
       import(/* webpackChunkName: "night" */ "../views/AllShifts.vue")
-  },
-  {
-    path: "/day",
-    name: "Day",
-    component: () => import(/* webpackChunkName: "day" */ "../views/Day.vue")
   }
 ];
 
