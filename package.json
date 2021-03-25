@@ -9,6 +9,7 @@
     "start": "node server/server"
   },
   "dependencies": {
+    "@mdi/js": "^5.9.55",
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "dotenv": "^8.2.0",

@@ -5,6 +5,7 @@
       :Workers="getShift"
       :shift="getState.shift"
       :submitStatus="getState.worker.submitStatus"
+      :todos="getTodos"
     />
   </div>
 </template>
@@ -20,11 +21,12 @@ export default {
     Table,
   },
   created() {
+    this.getTodoList();
     this.getWorkers();
     this.setShift("Day");
   },
   methods: {
-    ...mapActions(["getWorkers", "setShift"]),
+    ...mapActions(["getWorkers", "setShift", "getTodoList"]),
   },
   computed: {
     ...mapGetters(["getState"]),
@@ -33,6 +35,12 @@ export default {
         return i.shift == "Dzień";
       });
       return workers;
+    },
+    getTodos() {
+      let todoList = this.getState.notice.todos.filter((i) => {
+        return i.shift == "Day";
+      });
+      return todoList;
     },
   },
 };

@@ -180,6 +180,8 @@
     </v-data-table>
 
     <div class="footerTable mt-5 justify-space-around">
+      <TodoList :shift="shift" :todos="todos" />
+      <v-divider vertical></v-divider>
       <div class="alerts">
         <v-alert color="blue-grey" border="right" dark max-width="500"
           >Wszystkich pracownikow w zmianie: {{ workers.length }}
@@ -189,7 +191,6 @@
           {{ output.join(", ") }}
         </v-alert>
       </div>
-      <TodoList />
       <div>
         <v-alert
           v-if="alertText"
@@ -226,7 +227,7 @@
 import { mapActions } from "vuex";
 import TodoList from "./TodoList";
 export default {
-  props: ["Workers", "shift", "submitStatus"],
+  props: ["Workers", "shift", "submitStatus", "todos"],
   components: { TodoList },
   data: () => ({
     valid: true,

@@ -1,6 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import worker from "./worker/worker";
+import notice from "./notice/notice";
 import workDayInYear from "./workDayInYear/workDayInYear";
 
 Vue.use(Vuex);
@@ -21,7 +22,8 @@ export default new Vuex.Store({
   },
   modules: {
     worker,
-    workDayInYear
+    workDayInYear,
+    notice
   },
   getters: {
     getState(state) {

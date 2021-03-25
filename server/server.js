@@ -30,6 +30,7 @@ app.use(morgan("dev"));
 app.use("/api/workers", require("./routes/worker"));
 app.use("/api/workday", require("./routes/workDay"));
 app.use("/api/workdaydinyear", require("./routes/workDayInYear"));
+app.use("/api/notice", require("./routes/notice"));
 app.use(history());
 
 // Обозначаем статическую папку для  запуска приложения
