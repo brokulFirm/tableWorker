@@ -24,7 +24,6 @@ routerWorkDay.post("/", async (req, res) => {
 
 //Разобраться с поиском и сравнением елементов в mongoose. Для того что бы добавлять новые елементы, если нету в БД
 routerWorkDay.put("/", async (req, res) => {
-  // console.log(req.body);
   let countDayInfo = await WorkDay.find();
   let countRes = 0;
   try {
@@ -36,7 +35,6 @@ routerWorkDay.put("/", async (req, res) => {
           countDayElem.month == elem.month
         ) {
           await WorkDay.findByIdAndUpdate(elem._id, {
-            _id: elem._id,
             name: elem.name,
             lastName: elem.lastName,
             shift: elem.shift,
@@ -47,7 +45,6 @@ routerWorkDay.put("/", async (req, res) => {
         }
         if (countDayElem.month !== elem.month) {
           await WorkDay.findByIdAndUpdate(elem._id, {
-            _id: elem._id,
             name: elem.name,
             lastName: elem.lastName,
             shift: elem.shift,
@@ -86,6 +83,8 @@ let setYearInfo = async () => {
           await WorkDayInYear.updateOne(
             { _id: i._id },
             {
+              name: i.name,
+              lastName: i.lastName,
               year: yearNow,
               $set: {
                 ["month." + monthNow]: {
@@ -99,6 +98,8 @@ let setYearInfo = async () => {
           await WorkDayInYear.updateOne(
             { _id: i._id },
             {
+              name: i.name,
+              lastName: i.lastName,
               year: yearNow,
               month: {
                 [monthNow]: {

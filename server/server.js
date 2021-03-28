@@ -13,7 +13,8 @@ app.set("port", 4040);
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    useFindAndModify: false
   })
   .then(db => console.log("[OK] DB is connected"))
   .catch(err => console.error(err));
@@ -31,6 +32,7 @@ app.use("/api/workers", require("./routes/worker"));
 app.use("/api/workday", require("./routes/workDay"));
 app.use("/api/workdaydinyear", require("./routes/workDayInYear"));
 app.use("/api/notice", require("./routes/notice"));
+app.use("/api/vacation", require("./routes/vacation"));
 app.use(history());
 
 // Обозначаем статическую папку для  запуска приложения

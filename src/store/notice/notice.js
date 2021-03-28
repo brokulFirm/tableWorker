@@ -12,7 +12,6 @@ export default {
   mutations: {
     showTodoList(state, payload) {
       state.todos = payload;
-      console.log(state.todos);
     },
     setSubmitStatus(state, payload) {
       state.submitStatus = payload;

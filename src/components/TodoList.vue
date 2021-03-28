@@ -86,7 +86,7 @@
           border="left"
           elevation="2"
           colored-border
-          max-width="400"
+          width="400"
           class="pa-2"
           ><div class="todoItem d-flex justify-space-between align-center">
             <div class="d-flex justify-space-between align-center">
@@ -127,31 +127,24 @@ export default {
     description: "",
     todoList: [],
   }),
-  beforeUpdate() {
-    this.inicialize();
-  },
   mounted() {
     this.inicialize();
   },
   watch: {
-    getStateTodo() {
+    todos() {
       this.inicialize();
     },
   },
-  computed: {
-    getStateTodo() {
-      return this.todos;
-    },
-  },
+  computed: {},
   methods: {
     ...mapActions(["addTodo", "removeTodo", "getTodoList"]),
-    saveNewTodo() {
+    async saveNewTodo() {
       let newTodo = {
         description: this.description,
         date: this.date,
         shift: this.shift,
       };
-      this.addTodo(newTodo);
+      await this.addTodo(newTodo);
       this.close();
       this.getTodoList();
     },
