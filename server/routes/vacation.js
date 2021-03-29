@@ -30,7 +30,6 @@ routerVacation.put("/", async (req, res) => {
   let isCreated = await Vacation.findById(req.body._id);
   try {
     if (isCreated) {
-      console.log("UPDATED", newVac);
       if (isCreated.year == req.body.year) {
         await Vacation.findByIdAndUpdate(req.body._id, newVac);
       } else {
@@ -42,12 +41,13 @@ routerVacation.put("/", async (req, res) => {
         };
         await Vacation.findByIdAndUpdate(req.body._id, newYear);
         await Vacation.findByIdAndUpdate(req.body._id, newVac);
+        console.log("UPDATED");
       }
     } else {
-      console.log("CREATED", newVac);
       const record = new Vacation({ _id: req.body._id });
       await record.save();
       await Vacation.findByIdAndUpdate(req.body._id, newVac);
+      console.log("CREATED");
     }
     res.writeHead(200, "Updated", { "Content-Type": "text/plain" });
     res.end();
@@ -94,7 +94,10 @@ const vacationSort = elem => {
     };
   } else if (elem.type === "NZ") {
     vacationType = {
-      notPlanned: elem.start
+      notPlanned: {
+        start: elem.start,
+        comment: elem.commentNZ
+      }
     };
   }
 

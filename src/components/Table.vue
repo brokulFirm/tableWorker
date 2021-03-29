@@ -15,9 +15,10 @@
     >
       <template v-slot:expanded-item="{ headers, item }">
         <td class="pa-3" :colspan="headers.length">
-          <h5>Wybierz date urlopu dla {{ item.name + " " + item.lastName }}</h5>
-          <input type="date" />
-          <input type="date" />
+          <div class="d-flex">
+            <WorkerInfo :worker="item" :dateNow="selectedDate" />
+            <v-divider vertical></v-divider>
+          </div>
         </td>
       </template>
       <template v-slot:top>
@@ -182,6 +183,7 @@
     <div class="footerTable mt-5 justify-space-around">
       <TodoList :shift="shift" :todos="todos" />
       <v-divider vertical></v-divider>
+      <Vacation :dateNow="selectedDate" />
       <div class="alerts">
         <v-alert color="blue-grey" border="right" dark max-width="500"
           >Wszystkich pracownikow w zmianie: {{ workers.length }}
@@ -226,9 +228,11 @@
 <script>
 import { mapActions } from "vuex";
 import TodoList from "./TodoList";
+import WorkerInfo from "./WorkerInfo";
+import Vacation from "./Vacation";
 export default {
   props: ["Workers", "shift", "submitStatus", "todos"],
-  components: { TodoList },
+  components: { TodoList, WorkerInfo, Vacation },
   data: () => ({
     valid: true,
     nameRules: [(v) => !!v || "Nie może być puste."],

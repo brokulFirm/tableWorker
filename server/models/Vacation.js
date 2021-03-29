@@ -9,7 +9,7 @@ const Vacation = new Schema({
   vacDay: Number,
   sickLeave: Array,
   dayOff: Array,
-  notPlanned: [String],
+  notPlanned: Array,
   holidays: Array
 });
 module.exports = mongoose.model("Vacation", Vacation, "testvacations"); //УБРАТЬ ТЕСТЫ ПРИ СБОРКЕ НА ПРОДАКШН
