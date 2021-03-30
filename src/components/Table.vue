@@ -78,7 +78,7 @@
                         <v-col cols="12" sm="6" md="4">
                           <v-text-field
                             v-if="!redactMode"
-                            v-model="selectedDate"
+                            v-model="dateStart"
                             label="Paczątek pracy"
                           ></v-text-field>
                           <v-text-field
@@ -182,8 +182,7 @@
 
     <div class="footerTable mt-5 justify-space-around">
       <TodoList :shift="shift" :todos="todos" />
-      <v-divider vertical></v-divider>
-      <Vacation :dateNow="selectedDate" />
+      <Vacation :dateNow="selectedDate" :shift="shift" />
       <div class="alerts">
         <v-alert color="blue-grey" border="right" dark max-width="500"
           >Wszystkich pracownikow w zmianie: {{ workers.length }}
@@ -253,6 +252,7 @@ export default {
     expanded: [],
     output: [],
     selectedDate: "",
+    dateStart: "",
     disComfirm: false,
     headers: [
       {
@@ -375,6 +375,8 @@ export default {
     selectedDate() {
       this.monthName = this.getMonth;
       this.alertText = "";
+      this.dateStart = this.selectedDate;
+      this.setSelectedDate(this.selectedDate);
     },
     dialog(val) {
       val || this.close();
@@ -393,6 +395,7 @@ export default {
     this.tableShift = this.shift;
     this.getDateNow();
     this.selectedDate = this.dates[0];
+    this.setSelectedDate(this.selectedDate);
   },
 
   methods: {
@@ -402,6 +405,7 @@ export default {
       "addCountDay",
       "setWorker",
       "removeWorker",
+      "setSelectedDate",
     ]),
     getOutput() {
       const outPutArr = this.workers.filter(
@@ -475,6 +479,7 @@ export default {
         this.editedItem = Object.assign({}, this.defaultItem);
         this.editedIndex = -1;
       });
+      this.dateStart = this.selectedDate;
     },
 
     closeDelete() {
@@ -502,7 +507,7 @@ export default {
       } else {
         if (this.shift === "Day") this.editedItem.shift = "Dzień";
         if (this.shift === "Night") this.editedItem.shift = "Noc";
-        this.editedItem.startDate = this.selectedDate;
+        this.editedItem.startDate = this.dateStart;
         this.$refs.form.validate();
         await this.addNewWorker(this.editedItem);
         if (this.submitStatus == "Success") {
@@ -515,6 +520,7 @@ export default {
           this.snackbar = true;
         }
         this.getWorkers();
+        this.dateStart = this.selectedDate;
       }
       this.close();
     },

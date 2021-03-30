@@ -9,16 +9,23 @@ Vue.use(Vuex);
 Vue.config.devtools = true;
 export default new Vuex.Store({
   state: {
-    shift: ""
+    shift: "",
+    selectedDate: ""
   },
   mutations: {
     changeShift(state, payload) {
       state.shift = payload;
+    },
+    changeDate(state, payload) {
+      state.selectedDate = payload;
     }
   },
   actions: {
     setShift({ commit }, payload) {
       commit("changeShift", payload);
+    },
+    setSelectedDate({ commit }, payload) {
+      commit("changeDate", payload);
     }
   },
   modules: {

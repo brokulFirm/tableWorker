@@ -134,6 +134,7 @@ export default {
         end: this.dateEnd,
         name: this.worker.name,
         lastName: this.worker.lastName,
+        shift: this.worker.shift,
         vacDay: this.worker.vacDay,
         year: this.dateNow.split("-")[0],
         commentNZ: this.commentNZ,

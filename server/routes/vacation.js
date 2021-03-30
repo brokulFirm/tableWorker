@@ -106,9 +106,9 @@ const vacationSort = elem => {
     lastName: elem.lastName,
     year: elem.year,
     vacDay: elem.vacDay,
+    shift: elem.shift,
     $push: vacationType
   };
-  //   console.log(vacObj);
   return vacObj;
 };
 

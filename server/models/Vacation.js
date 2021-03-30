@@ -7,6 +7,7 @@ const Vacation = new Schema({
   name: String,
   lastName: String,
   vacDay: Number,
+  shift: String,
   sickLeave: Array,
   dayOff: Array,
   notPlanned: Array,
