@@ -8,6 +8,8 @@ export default {
   state: {
     submitStatus: "",
     allVacation: [],
+    vacNow: [],
+    vacPlanned: [],
     sickLeave: [],
     holidays: [],
     dayOff: []
@@ -23,15 +25,16 @@ export default {
       for (let elem of state.allVacation) {
         if (elem.sickLeave.length) {
           sortVac(state, payload, elem, "sickLeave");
-        } else if (elem.dayOff.length) {
+        }
+        if (elem.dayOff.length) {
           sortVac(state, payload, elem, "dayOff");
-        } else if (elem.holidays.length) {
+        }
+        if (elem.holidays.length) {
           sortVac(state, payload, elem, "holidays");
         }
       }
     },
     showVacation(state, payload) {
-      console.log("qwe");
       let vacSort;
       if (payload.shift === "Night") {
         vacSort = payload.data.filter(i => {
@@ -74,6 +77,8 @@ export default {
       state.dayOff = [];
       state.holidays = [];
       state.sickLeave = [];
+      state.vacPlanned = [];
+      state.vacNow = [];
       commit("setSubmitStatus", response);
     }
   },
@@ -89,14 +94,24 @@ const sortVac = (state, date, elem, vacTitle) => {
     let start = new Date(i.start);
     let end = new Date(i.end);
     let now = new Date(date);
-    if (start >= now || end >= now) {
-      state[vacTitle].push({
-        _id: elem._id,
-        name: elem.name,
-        lastName: elem.lastName,
-        start: i.start,
-        end: i.end
-      });
+    let worker = {
+      _id: elem._id,
+      name: elem.name,
+      lastName: elem.lastName,
+      start: i.start,
+      end: i.end,
+      type: vacTitle
+    };
+    if (start <= now && end >= now) {
+      state[vacTitle].push(worker);
+      state.vacNow.push(worker);
+    }
+    if (+start == +now && !i.end) {
+      state[vacTitle].push(worker);
+      state.vacNow.push(worker);
+    }
+    if (start > now) {
+      state.vacPlanned.push(worker);
     }
   });
 };

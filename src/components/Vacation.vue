@@ -2,7 +2,7 @@
   <div>
     <v-card class="mx-auto" min-width="400">
       <v-toolbar color="teal" dark>
-        <v-toolbar-title>Topics</v-toolbar-title>
+        <v-toolbar-title>Сzasowo zwolniony z pracy:</v-toolbar-title>
       </v-toolbar>
       <v-list>
         <v-list-group
@@ -20,10 +20,10 @@
 
           <v-list-item v-for="child in item.items" :key="child.title">
             <v-list-item-content>
-              <v-list-item-title
-                class="ma-0 pa-0 list-item"
+              <v-list-item-subtitle
+                class="ma-0 pa-0"
                 v-text="child.title"
-              ></v-list-item-title>
+              ></v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
         </v-list-group>
@@ -41,17 +41,18 @@ export default {
       {
         action: "mdi-home",
         items: [],
-        title: "Wolny",
       },
       {
         action: "mdi-hospital-box",
         items: [],
-        title: "Chorobowy",
       },
       {
         action: "mdi-island",
         items: [],
-        title: "Urlopy",
+      },
+      {
+        action: "mdi-calendar-clock",
+        items: [],
       },
     ],
   }),
@@ -60,8 +61,10 @@ export default {
   },
   watch: {
     allVacation() {
-      console.log("qwerwqr");
-      this.setdayOff();
+      this.createTitle(this.dayOff, 0, "Wolny");
+      this.createTitle(this.sickLeave, 1, "Chorobowy");
+      this.createTitle(this.holidays, 2, "Urlopy");
+      this.createTitle(this.planned, 3, "Zaplanowany");
     },
   },
   computed: {
@@ -75,29 +78,60 @@ export default {
     dayOff() {
       return this.getVacState.dayOff;
     },
+    planned() {
+      return this.getVacState.vacPlanned;
+    },
     allVacation() {
       return this.getVacState.allVacation;
     },
   },
   methods: {
     ...mapActions(["getVacations"]),
-    setdayOff() {
+    createTitle(elem, index, title) {
       let vacArr = [];
-      for (let vac of this.dayOff) {
-        vacArr.push({
-          title:
-            vac.name +
-            " " +
-            vac.lastName +
-            " (" +
-            vac.start +
-            "-" +
-            vac.end +
-            ")",
-        });
+      let sortArr = elem.sort((a, b) => {
+        var c = new Date(a.start);
+        var d = new Date(b.start);
+        return c - d;
+      });
+      for (let vac of sortArr) {
+        if (title == "Zaplanowany") {
+          let typeName = "";
+          if (vac.type == "dayOff") {
+            typeName = "W";
+          }
+          if (vac.type == "holidays") {
+            typeName = "U";
+          }
+          if (vac.type == "sickLeave") {
+            typeName = "CH";
+          }
+
+          vacArr.push({
+            title:
+              vac.name +
+              " " +
+              vac.lastName +
+              " (" +
+              vac.start +
+              (vac.end ? " --- " + vac.end + ")" : ")") +
+              " " +
+              typeName,
+          });
+        } else {
+          vacArr.push({
+            title:
+              vac.name +
+              " " +
+              vac.lastName +
+              " (" +
+              vac.start +
+              (vac.end ? " --- " + vac.end + ")" : ")"),
+          });
+        }
       }
-      console.log(vacArr);
-      this.vacType[0].items = vacArr;
+      this.vacType[index].items = vacArr;
+      this.vacType[index].title = title + " (" + vacArr.length + ")";
     },
   },
 };
@@ -108,6 +142,12 @@ export default {
   > .v-list-group__items
   > .v-list-item {
   padding-left: 10px !important;
-  font-size: 24px;
+  min-height: 0px;
+}
+.v-list-item__content {
+  padding: 5px 0;
+}
+.v-list-item__subtitle {
+  color: black !important;
 }
 </style>

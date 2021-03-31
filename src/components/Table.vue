@@ -21,6 +21,14 @@
           </div>
         </td>
       </template>
+      <template v-slot:item.data-table-select="{ item, isSelected, select }">
+        <v-simple-checkbox
+          :value="!outputId.includes(item._id) && isSelected"
+          :readonly="outputId.includes(item._id)"
+          :disabled="outputId.includes(item._id)"
+          @input="select($event)"
+        ></v-simple-checkbox>
+      </template>
       <template v-slot:top>
         <div class="headerTable">
           <v-toolbar flat>
@@ -230,9 +238,10 @@ import TodoList from "./TodoList";
 import WorkerInfo from "./WorkerInfo";
 import Vacation from "./Vacation";
 export default {
-  props: ["Workers", "shift", "submitStatus", "todos"],
+  props: ["Workers", "shift", "submitStatus", "todos", "vacation"],
   components: { TodoList, WorkerInfo, Vacation },
   data: () => ({
+    outputId: [],
     valid: true,
     nameRules: [(v) => !!v || "Nie może być puste."],
     numberRules: [(v) => v == Number(v) || "Tylko cyfry"],
@@ -254,6 +263,7 @@ export default {
     selectedDate: "",
     dateStart: "",
     disComfirm: false,
+    selectedLoad: 0,
     headers: [
       {
         text: "Imię",
@@ -303,7 +313,6 @@ export default {
       medicalBoard: "",
     },
   }),
-
   computed: {
     formTitle() {
       return this.editedIndex === -1
@@ -356,6 +365,15 @@ export default {
     },
   },
   watch: {
+    selectedLoad() {
+      if (this.selectedLoad === 1) {
+        this.getSelected();
+        this.selectedLoad = false;
+      }
+    },
+    vacation() {
+      this.getSelected();
+    },
     selected() {
       this.getOutput();
     },
@@ -366,10 +384,10 @@ export default {
     Workers() {
       this.initialize();
       if (this.selected.length == 0 && this.Workers.length > 0) {
-        this.selected = this.workers;
+        this.getSelected();
       }
       if (this.selected.length > this.workers.length) {
-        this.selected = this.workers;
+        this.getSelected();
       }
     },
     selectedDate() {
@@ -388,10 +406,9 @@ export default {
       });
     },
   },
-
   created() {
     this.initialize();
-    this.selected = this.workers;
+    this.getSelected();
     this.tableShift = this.shift;
     this.getDateNow();
     this.selectedDate = this.dates[0];
@@ -409,12 +426,13 @@ export default {
     ]),
     getOutput() {
       const outPutArr = this.workers.filter(
-        (e) => this.selected.findIndex((i) => i._id == e._id) === -1
+        (e) => this.selected.findIndex((i) => i._id == e._id) === -1 //Сделать проверку что бы в случае нажатия на кнопку (селект алл) остутствующих фильтровало по отпускам(outputID)
       );
       let outPutName = [];
       for (let worker of outPutArr) {
         outPutName.push(worker.name + " " + worker.lastName);
       }
+      console.log(outPutArr);
       this.output = outPutName;
     },
     getDateNow() {
@@ -444,12 +462,21 @@ export default {
     initialize() {
       if (this.workers.length && this.workers.length < this.Workers.length) {
         this.workers = this.Workers;
-        this.selected.push(this.Workers.reverse()[0]);
+        this.selected.push(this.Workers.reverse()[0]); //При добавлении нового работника, отмечаем его как присутствующего
       } else {
         this.workers = this.Workers;
       }
     },
-
+    getSelected() {
+      this.outputId = [];
+      this.vacation.forEach((i) => {
+        this.outputId.push(i._id);
+      });
+      let vacArr = this.workers.filter(
+        (e) => this.vacation.findIndex((i) => i._id == e._id) === -1
+      );
+      this.selected = vacArr;
+    },
     editItem(item) {
       this.redactMode = true;
       this.editedIndex = this.workers.indexOf(item);

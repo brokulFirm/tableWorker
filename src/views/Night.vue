@@ -6,6 +6,7 @@
       :shift="getState.shift"
       :submitStatus="getState.worker.submitStatus"
       :todos="getTodos"
+      :vacation="getState.vacation.vacNow"
     />
   </div>
 </template>

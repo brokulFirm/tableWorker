@@ -26,7 +26,8 @@ const routes = [
     name: "AllShifts",
     component: () =>
       import(/* webpackChunkName: "night" */ "../views/AllShifts.vue")
-  }
+  },
+  { path: "*", component: Start }
 ];
 
 const router = new VueRouter({

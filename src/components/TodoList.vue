@@ -86,7 +86,7 @@
           border="left"
           elevation="2"
           colored-border
-          width="400"
+          max-width="350"
           class="pa-2"
           ><div class="todoItem d-flex justify-space-between align-center">
             <div class="d-flex justify-space-between align-center">
