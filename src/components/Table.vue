@@ -12,12 +12,14 @@
       item-key="_id"
       single-expand
       :expanded.sync="expanded"
+      @toggle-select-all="selectAllRedact"
     >
       <template v-slot:expanded-item="{ headers, item }">
         <td class="pa-3" :colspan="headers.length">
           <div class="d-flex">
-            <WorkerInfo :worker="item" :dateNow="selectedDate" />
+            <WorkerVac :worker="item" :dateNow="selectedDate" />
             <v-divider vertical></v-divider>
+            <WorkerInfo :worker="item" />
           </div>
         </td>
       </template>
@@ -39,6 +41,15 @@
                 {{ selectedDate }}</b
               ></v-toolbar-title
             >
+            <v-spacer></v-spacer>
+            <div class="warn">
+              <h3>UWAGA!!!</h3>
+              <p>
+                Najpierw usuń pracowników i dodaj nowych !!!! Następnie zaznacz,
+                kogo nie ma !!!! Jeśli zauważysz jakieś błędy, zrób zdjęcie i
+                daj mi znać. !!!!
+              </p>
+            </div>
             <v-spacer></v-spacer>
             <v-dialog v-model="dialog" max-width="500px">
               <template v-slot:activator="{ on, attrs }">
@@ -109,6 +120,25 @@
                             hint="rrrr-mm-dd"
                           ></v-text-field>
                         </v-col>
+                        <v-col cols="12" sm="6" md="4">
+                          <v-text-field
+                            v-model="editedItem.adres"
+                            label="Adres zamieszkania"
+                          ></v-text-field>
+                        </v-col>
+                        <v-col cols="12" sm="6" md="4">
+                          <v-select
+                            v-model="editedItem.contract"
+                            :items="contractType"
+                            label="Rodzja umowy"
+                          ></v-select>
+                        </v-col>
+                        <v-col cols="12" sm="6" md="4">
+                          <v-text-field
+                            v-model="editedItem.vacDay"
+                            label="Ilość dni urlopu"
+                          ></v-text-field>
+                        </v-col>
                       </v-row>
                     </v-form>
                   </v-container>
@@ -151,8 +181,8 @@
             </v-dialog>
           </v-toolbar>
           <v-divider></v-divider>
-          <v-toolbar flat prominent>
-            <div class="search ml-16">
+          <v-toolbar height="150" flat prominent>
+            <div class="search ml-16 mt-3">
               <v-text-field
                 class="mt-10"
                 v-model="search"
@@ -169,7 +199,8 @@
                 ></v-select>
               </v-col>
             </div>
-            <h1 class="mt-5 monthName">{{ monthName }}</h1>
+            <h1 class="mt-10 monthName">{{ monthName }}</h1>
+            <PlanningWorker :dateNow="selectedDate" :workers="Workers" />
           </v-toolbar>
         </div>
       </template>
@@ -192,10 +223,11 @@
       <TodoList :shift="shift" :todos="todos" />
       <Vacation :dateNow="selectedDate" :shift="shift" />
       <div class="alerts">
-        <v-alert color="blue-grey" border="right" dark max-width="500"
-          >Wszystkich pracownikow w zmianie: {{ workers.length }}
+        <v-alert color="blue-grey" border="right" dark max-width="400"
+          >Wszystkich pracownikow w zmianie: {{ workers.length }} --- Dziś jest
+          :{{ selected.length }}
         </v-alert>
-        <v-alert type="info" max-width="500">
+        <v-alert type="info" max-width="400">
           Dziś nie ma ( {{ workers.length - selected.length }} ):
           {{ output.join(", ") }}
         </v-alert>
@@ -235,11 +267,13 @@
 <script>
 import { mapActions } from "vuex";
 import TodoList from "./TodoList";
+import WorkerVac from "./WorkerVac";
 import WorkerInfo from "./WorkerInfo";
 import Vacation from "./Vacation";
+import PlanningWorker from "./PlanningWorker";
 export default {
   props: ["Workers", "shift", "submitStatus", "todos", "vacation"],
-  components: { TodoList, WorkerInfo, Vacation },
+  components: { TodoList, WorkerVac, Vacation, WorkerInfo, PlanningWorker },
   data: () => ({
     outputId: [],
     valid: true,
@@ -263,7 +297,8 @@ export default {
     selectedDate: "",
     dateStart: "",
     disComfirm: false,
-    selectedLoad: 0,
+    selectedAllCount: 0,
+    contractType: ["Zlecenie", "Działalność"],
     headers: [
       {
         text: "Imię",
@@ -302,6 +337,9 @@ export default {
       shift: "",
       number: "",
       medicalBoard: "",
+      adres: "",
+      contract: "",
+      vacDay: "",
     },
     defaultItem: {
       name: "",
@@ -311,6 +349,9 @@ export default {
       shift: "",
       number: "",
       medicalBoard: "",
+      adres: "",
+      contract: "",
+      vacDay: "",
     },
   }),
   computed: {
@@ -365,12 +406,6 @@ export default {
     },
   },
   watch: {
-    selectedLoad() {
-      if (this.selectedLoad === 1) {
-        this.getSelected();
-        this.selectedLoad = false;
-      }
-    },
     vacation() {
       this.getSelected();
     },
@@ -395,6 +430,7 @@ export default {
       this.alertText = "";
       this.dateStart = this.selectedDate;
       this.setSelectedDate(this.selectedDate);
+      this.getSelected();
     },
     dialog(val) {
       val || this.close();
@@ -424,18 +460,32 @@ export default {
       "removeWorker",
       "setSelectedDate",
     ]),
+    selectAllRedact() {
+      //Временное решения проблемы добавления заблокированых работников в селектед
+      if (this.selectedAllCount === 0) {
+        this.selected = this.workers.filter(
+          (e) => this.vacation.findIndex((i) => i._id == e._id) === -1
+        );
+        this.selectedAllCount++;
+      } else if (this.selectedAllCount === 1) {
+        this.selected = [];
+        this.selectedAllCount = 0;
+      }
+    },
     getOutput() {
-      const outPutArr = this.workers.filter(
-        (e) => this.selected.findIndex((i) => i._id == e._id) === -1 //Сделать проверку что бы в случае нажатия на кнопку (селект алл) остутствующих фильтровало по отпускам(outputID)
+      //Показываем отстутвующих работников на данный момент
+      let outPutArr = this.workers.filter(
+        (e) => this.selected.findIndex((i) => i._id == e._id) === -1
       );
       let outPutName = [];
       for (let worker of outPutArr) {
         outPutName.push(worker.name + " " + worker.lastName);
       }
-      console.log(outPutArr);
+      // console.log(outPutArr);
       this.output = outPutName;
     },
     getDateNow() {
+      //Получаем 2 даты для выбора в селекте(сегодня и вчера)
       let date = new Date();
       let day = date.getDate();
       let month = date.getMonth();
@@ -595,5 +645,14 @@ export default {
 }
 .footerTable {
   display: flex;
+}
+.warn {
+  padding: 0px;
+  background: rgb(255, 215, 163);
+  max-width: 600px;
+  p {
+    font-size: 14px;
+    line-height: 1;
+  }
 }
 </style>

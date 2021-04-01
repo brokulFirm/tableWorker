@@ -148,8 +148,8 @@ export default {
       this.close();
       this.getTodoList();
     },
-    deleteTodo(item) {
-      this.removeTodo(item);
+    async deleteTodo(item) {
+      await this.removeTodo(item);
       this.getTodoList();
     },
     close() {

@@ -8,6 +8,9 @@ const Worker = new Schema({
   rate: Number,
   shift: String,
   number: String,
-  medicalBoard: String
+  medicalBoard: String,
+  adres: String,
+  contract: String,
+  vacDay: Number
 });
 module.exports = mongoose.model("Worker", Worker, "testworkers"); //УБРАТЬ ТЕСТЫ ПРИ СБОРКЕ НА ПРОДАКШН

@@ -4,6 +4,7 @@ const routerWorkDay = express.Router();
 const WorkDay = require("../models/WorkDay");
 
 const WorkDayInYear = require("../models/WorkDayInYear");
+const date = new Date();
 
 //Настраиваем end point для Rest API
 routerWorkDay.get("/", async (req, res) => {
@@ -25,7 +26,8 @@ routerWorkDay.post("/", async (req, res) => {
 //Разобраться с поиском и сравнением елементов в mongoose. Для того что бы добавлять новые елементы, если нету в БД
 routerWorkDay.put("/", async (req, res) => {
   let countDayInfo = await WorkDay.find();
-  let countRes = 0;
+  let countResAll = 0;
+  let counetResSuccess = 0;
   try {
     for (let elem of req.body) {
       let countDayElem = countDayInfo.find(i => i._id == elem._id);
@@ -42,8 +44,8 @@ routerWorkDay.put("/", async (req, res) => {
             month: elem.month,
             $push: { countDay: elem.countDay }
           });
-        }
-        if (countDayElem.month !== elem.month) {
+          counetResSuccess += 1;
+        } else if (countDayElem.month !== elem.month) {
           await WorkDay.findByIdAndUpdate(elem._id, {
             name: elem.name,
             lastName: elem.lastName,
@@ -52,14 +54,17 @@ routerWorkDay.put("/", async (req, res) => {
             month: elem.month,
             countDay: elem.countDay
           });
+          counetResSuccess += 1;
         }
       } else {
         const record = new WorkDay(elem);
         await record.save();
+        counetResSuccess += 1;
       }
-      countRes += 1;
+      countResAll += 1;
     }
-    console.log("Objects received---", countRes);
+    console.log("Objects received All---", countResAll + " " + date);
+    console.log("Objects received Success---", counetResSuccess + " " + date);
     res.writeHead(200, "Updated", { "Content-Type": "text/plain" });
     res.end();
   } catch {

@@ -22,6 +22,11 @@ export default {
       }, 1000);
     },
     sortForType(state, payload) {
+      state.vacNow = [];
+      state.vacPlanned = [];
+      state.sickLeave = [];
+      state.holidays = [];
+      state.dayOff = [];
       for (let elem of state.allVacation) {
         if (elem.sickLeave.length) {
           sortVac(state, payload, elem, "sickLeave");

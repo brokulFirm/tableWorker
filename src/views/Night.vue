@@ -27,10 +27,18 @@ export default {
     this.setShift("Night");
   },
   methods: {
-    ...mapActions(["getWorkers", "setShift", "getTodoList"]),
+    ...mapActions(["getWorkers", "setShift", "getTodoList", "getVacations"]),
+  },
+  watch: {
+    getDate() {
+      this.getVacations();
+    },
   },
   computed: {
     ...mapGetters(["getState"]),
+    getDate() {
+      return this.getState.selectedDate;
+    },
     getShift() {
       let workers = this.getState.worker.workers.filter((i) => {
         return i.shift == "Noc";
