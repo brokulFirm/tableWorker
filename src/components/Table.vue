@@ -273,7 +273,13 @@ import Vacation from "./Vacation";
 import PlanningWorker from "./PlanningWorker";
 export default {
   props: ["Workers", "shift", "submitStatus", "todos", "vacation"],
-  components: { TodoList, WorkerVac, Vacation, WorkerInfo, PlanningWorker },
+  components: {
+    TodoList,
+    WorkerVac,
+    Vacation,
+    WorkerInfo,
+    PlanningWorker,
+  },
   data: () => ({
     outputId: [],
     valid: true,
@@ -570,6 +576,12 @@ export default {
     async save() {
       if (this.editedIndex > -1) {
         this.$refs.form.validate();
+        if (this.selected.findIndex((i) => i._id === this.editedItem._id) != -1)
+          this.selected.splice(
+            this.selected.findIndex((i) => i._id === this.editedItem._id),
+            1,
+            this.editedItem
+          );
         await this.setWorker(this.editedItem);
         if (this.submitStatus == "Success") {
           this.snackbarType = "primary";

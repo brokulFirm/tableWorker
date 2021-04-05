@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const hostName = process.env.VUE_APP_HOST + ":4040";
+const hostName = process.env.VUE_APP_HOST + ":" + process.env.VUE_APP_PORT;
 
 import axios from "axios";
 

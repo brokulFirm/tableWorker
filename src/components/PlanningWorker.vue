@@ -24,11 +24,13 @@
       </v-menu>
       <v-row>
         <v-col>
-          <v-btn elevation="2" color="success">W pracę</v-btn>
+          <v-btn elevation="2" color="success" @click="printPresent"
+            >W pracę</v-btn
+          >
         </v-col>
         <v-col>Drukuj</v-col>
         <v-col>
-          <v-btn elevation="2" color="success">Wolne</v-btn>
+          <v-btn elevation="2" color="success" @click="printOut">Wolne</v-btn>
         </v-col>
       </v-row>
     </v-card>
@@ -44,22 +46,36 @@ export default {
   data: () => ({
     date: "",
     menu1: false,
-    planned: [],
+    outPlanned: [],
+    present: [],
   }),
-  mounted() {
-    this.getOutput();
-  },
+
   watch: {
-    getVacation() {
-      //ТУТ НЕ СРАБАТЫВАЕТ!
-      console.log("111");
-      this.getOutput();
+    date() {
+      this.outPlanned = this.getVacation.filter((i) => {
+        let start = new Date(i.start);
+        let end = new Date(i.end);
+        let now = new Date(this.date);
+        if (start <= now && i.end && end >= now) return i;
+        else if (+start == +now) return i;
+      });
+      this.present = this.workers.filter(
+        (e) => this.outPlanned.findIndex((i) => i._id == e._id) === -1
+      );
     },
   },
   computed: {
     ...mapGetters(["getVacState"]),
     getVacation() {
-      return this.getVacState;
+      let newVacArr;
+      if (this.getVacState.vacNow && this.getVacState.vacPlanned) {
+        newVacArr = this.getVacState.vacNow.concat(this.getVacState.vacPlanned);
+      } else if (this.getVacState.vacNow && !this.getVacState.vacPlanned) {
+        newVacArr = this.getVacState.vacNow;
+      } else if (!this.getVacState.vacNow && this.getVacState.vacPlanned) {
+        newVacArr = this.getVacState.vacPlanned;
+      }
+      return newVacArr;
     },
     computedDateFormattedMomentjs() {
       moment.locale("pl");
@@ -67,17 +83,43 @@ export default {
     },
   },
   methods: {
-    getOutput() {
-      let newVacArr = this.getVacation.vacNow.concat(
-        this.getVacation.vacPlanned
-      );
-      console.log("test", this.getVacation.vacNow, newVacArr);
+    printPresent() {
+      const newWindow = window.open();
+      let stylesMain = "h3{ margin-left: 250px; }";
+      let test = this.present.map((i) => {
+        return "<li>" + i.name + " " + i.lastName + "</li>";
+      });
+      let html = "<ol>";
+      html += test.join(" ");
+      html += "</ol>";
+      console.log(test);
+      newWindow.document.write(`<style>${stylesMain}</style>`);
+      newWindow.document.write('<div class="print">');
+      newWindow.document.write(`<h3>W prace ${this.date}:</h3>`);
+      newWindow.document.write(html);
+      newWindow.document.write("</div>");
+      newWindow.print();
+      newWindow.close();
+    },
+    printOut() {
+      const newWindow = window.open();
+      let stylesMain = "h3{ margin-left: 250px; }";
+      let test = this.outPlanned.map((i) => {
+        return "<li>" + i.name + " " + i.lastName + "</li>";
+      });
+      let html = "<ol>";
+      html += test.join(" ");
+      html += "</ol>";
+      console.log(test);
+      newWindow.document.write(`<style>${stylesMain}</style>`);
+      newWindow.document.write('<div class="print">');
+      newWindow.document.write(`<h3>Wolny ${this.date}:</h3>`);
+      newWindow.document.write(html);
+      newWindow.document.write("</div>");
+      newWindow.print();
+      newWindow.close();
     },
   },
 };
 </script>
-<style lang="scss" scoped>
-.main {
-  display: none;
-}
-</style>
+<style lang="scss" scoped></style>

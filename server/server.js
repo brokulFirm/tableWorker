@@ -8,7 +8,7 @@ require("dotenv").config();
 
 const app = express();
 const ip = process.env.VUE_APP_HOST;
-app.set("port", 4040);
+app.set("port", process.env.VUE_APP_PORT);
 //Подключаем базу данных перед запуском сервера
 mongoose
   .connect(process.env.MONGO_URI, {
