@@ -17,7 +17,11 @@
       <template v-slot:expanded-item="{ headers, item }">
         <td class="pa-3" :colspan="headers.length">
           <div class="d-flex">
-            <WorkerVac :worker="item" :dateNow="selectedDate" />
+            <WorkerVac
+              :worker="item"
+              :dateNow="selectedDate"
+              :getSelected="getSelected"
+            />
             <v-divider vertical></v-divider>
             <WorkerInfo :worker="item" />
           </div>
@@ -412,9 +416,6 @@ export default {
     },
   },
   watch: {
-    vacation() {
-      this.getSelected();
-    },
     selected() {
       this.getOutput();
     },
@@ -487,7 +488,6 @@ export default {
       for (let worker of outPutArr) {
         outPutName.push(worker.name + " " + worker.lastName);
       }
-      // console.log(outPutArr);
       this.output = outPutName;
     },
     getDateNow() {
@@ -523,7 +523,7 @@ export default {
         this.workers = this.Workers;
       }
     },
-    getSelected() {
+    getSelected(payload) {
       this.outputId = [];
       this.vacation.forEach((i) => {
         this.outputId.push(i._id);
@@ -531,7 +531,11 @@ export default {
       let vacArr = this.workers.filter(
         (e) => this.vacation.findIndex((i) => i._id == e._id) === -1
       );
-      this.selected = vacArr;
+      if (payload) {
+        this.selected = this.selected.filter((i) => i._id != payload);
+      } else {
+        this.selected = vacArr;
+      }
     },
     editItem(item) {
       this.redactMode = true;
@@ -625,6 +629,7 @@ export default {
           lastName: elem.lastName,
           shift: elem.shift,
           rate: elem.rate,
+          contract: elem.contract,
         };
         arrCount.push(workCount);
       }

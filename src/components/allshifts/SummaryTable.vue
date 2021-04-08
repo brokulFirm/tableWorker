@@ -4,10 +4,25 @@
       :headers="headers"
       :items="workers"
       :search="search"
-      sort-by="name"
+      :sort-by="['name', 'contract']"
       class="elevation-2"
       item-key="_id"
     >
+      <template v-slot:item.salary="{ item }">
+        <v-chip color="green" dark>
+          {{ item.salary }}
+        </v-chip>
+      </template>
+      <template v-slot:item.countDay="{ item }">
+        <v-chip color="lime lighten-4">
+          {{ item.countDay }}
+        </v-chip>
+      </template>
+      <template v-slot:item.vacDay="{ item }">
+        <v-chip color="blue lighten-4">
+          {{ item.vacDay }}
+        </v-chip>
+      </template>
       <template v-slot:top>
         <div class="headerTable">
           <v-toolbar flat prominent>
@@ -15,7 +30,7 @@
               ><b>Tablica wynikowa {{ dateNow }}</b></v-toolbar-title
             >
             <v-spacer></v-spacer>
-            <v-col class="d-flex mt-5 ml-10" cols="1" sm="2">
+            <v-col class="d-flex mr-5 mt-5" cols="10" sm="2">
               <v-select
                 :items="shifts"
                 outlined
@@ -23,6 +38,7 @@
                 v-model="selectedShift"
               ></v-select>
             </v-col>
+
             <v-dialog v-model="dialogDelete" max-width="500px">
               <v-card>
                 <v-card-title class="headline"
@@ -54,16 +70,27 @@
                 label="Szukaj pracownika..."
                 hide-details
               ></v-text-field>
-              <v-col class="d-flex mt-5 ml-10">
-                <v-select
-                  :items="dates"
-                  label="Wybierz miesiąc"
-                  solo
-                  v-model="selectedDate"
-                ></v-select>
-              </v-col>
             </div>
+            <v-col cols="2" class="d-flex mt-5 mx-16">
+              <h3 class="mr-5">Wyniki miesiąca:</h3>
+              <v-select
+                class="month"
+                :items="dates"
+                append-outer-icon="mdi-calendar-multiple-check"
+                solo
+                v-model="selectedDate"
+              ></v-select>
+            </v-col>
             <h1 class="mt-5 monthName">{{ monthName }}</h1>
+            <v-col cols="2" class="mr-10 mt-5">
+              <h3>Rodzaj umowy:</h3>
+              <v-select
+                :items="contracts"
+                single-line
+                prepend-icon="mdi-file-document-edit"
+                v-model="selectedContracts"
+              ></v-select>
+            </v-col>
           </v-toolbar>
         </div>
       </template>
@@ -93,11 +120,10 @@
 <script>
 import { mapActions } from "vuex";
 export default {
-  props: ["Workers"],
+  props: ["Workers", "holidays"],
   data: () => ({
     snackbar: false,
     text: "",
-    redactMode: false,
     search: "",
     dialog: false,
     dialogDelete: false,
@@ -107,6 +133,8 @@ export default {
     dates: [],
     shifts: ["Wszystkie", "Dzień", "Noc"],
     selectedShift: "Wszystkie",
+    contracts: ["Wszystkie", "Działalność", "Zlecenie"],
+    selectedContracts: "Wszystkie",
     headers: [
       {
         text: "Imię",
@@ -133,6 +161,17 @@ export default {
         align: "center",
       },
       {
+        text: "Rodzaj umowy",
+        value: "contract",
+        align: "center",
+      },
+      {
+        text: "Ilość urlopu",
+        value: "vacDay",
+        sortable: false,
+        align: "center",
+      },
+      {
         text: "Ilość dni",
         value: "countDay",
         sortable: false,
@@ -145,7 +184,7 @@ export default {
         align: "center",
       },
       {
-        text: "Edytuj",
+        text: "Usuń pracownika",
         value: "actions",
         sortable: false,
         width: "10%",
@@ -230,6 +269,9 @@ export default {
     },
   },
   watch: {
+    selectedContracts() {
+      this.initialize();
+    },
     Workers() {
       this.workers = [];
       this.initialize();
@@ -265,8 +307,8 @@ export default {
     this.selectedDate =
       this.dateNow.split("-")[0] + "-" + this.dateNow.split("-")[1];
     this.dates = this.getMonthInYear;
-    this.initialize();
     this.tableShift = this.shift;
+    this.initialize();
   },
 
   methods: {
@@ -294,25 +336,53 @@ export default {
     },
 
     initialize() {
+      let workersList = [];
       for (let worker of this.Workers) {
         if (
           worker.year == this.selectedDate.split("-")[0] &&
           worker.month[this.selectedDate.split("-")[1]]
         ) {
+          let workerVaction = this.holidays.find((i) => i._id == worker._id);
+          let vacCountDay = 0;
+          if (workerVaction) {
+            let workerVacFilter = workerVaction.holidays.filter((i) => {
+              let year = i.start.split("-")[0];
+              let month = i.start.split("-")[1];
+              return this.selectedDate == year + "-" + month;
+            });
+            if (workerVacFilter) {
+              let vacation = workerVacFilter.forEach((i) => {
+                vacCountDay += i.countDay;
+                return vacation;
+              });
+            }
+          }
           let day =
             worker.month[this.selectedDate.split("-")[1]].countDay.length;
           let rate = worker.month[this.selectedDate.split("-")[1]].monthRate;
-          this.workers.push({
+          workersList.push({
             _id: worker._id,
             name: worker.name,
             lastName: worker.lastName,
             shift: worker.shift,
             monthRate: rate,
             countDay: day,
-            salary: Number(day) * Number(rate),
+            contract: worker.contract,
+            vacDay: vacCountDay,
+            salary: (Number(day) + Number(vacCountDay)) * Number(rate),
           });
         }
       }
+
+      this.workers = workersList.filter((i) => {
+        if (this.selectedContracts == "Zlecenie") {
+          return i.contract == "Zlecenie";
+        } else if (this.selectedContracts == "Działalność") {
+          return i.contract == "Działalność";
+        } else {
+          return i;
+        }
+      });
     },
 
     deleteItem(item) {
@@ -350,10 +420,6 @@ export default {
   max-width: 50%;
   display: flex;
 }
-.monthName {
-  width: 50%;
-  text-align: center;
-}
 .dateNow {
   font-weight: bold;
   font-size: 24px;
@@ -361,5 +427,12 @@ export default {
 }
 .footerTable {
   display: flex;
+}
+.monthName {
+  width: 30%;
+  text-align: center;
+}
+.month {
+  min-width: 180px;
 }
 </style>

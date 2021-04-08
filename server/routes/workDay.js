@@ -4,7 +4,6 @@ const routerWorkDay = express.Router();
 const WorkDay = require("../models/WorkDay");
 
 const WorkDayInYear = require("../models/WorkDayInYear");
-const date = new Date();
 
 //Настраиваем end point для Rest API
 routerWorkDay.get("/", async (req, res) => {
@@ -26,6 +25,7 @@ routerWorkDay.post("/", async (req, res) => {
 //Разобраться с поиском и сравнением елементов в mongoose. Для того что бы добавлять новые елементы, если нету в БД
 routerWorkDay.put("/", async (req, res) => {
   let countDayInfo = await WorkDay.find();
+  const date = new Date();
   let countResAll = 0;
   let counetResSuccess = 0;
   try {
@@ -42,6 +42,7 @@ routerWorkDay.put("/", async (req, res) => {
             shift: elem.shift,
             rate: elem.rate,
             month: elem.month,
+            contract: elem.contract,
             $push: { countDay: elem.countDay }
           });
           counetResSuccess += 1;
@@ -52,6 +53,7 @@ routerWorkDay.put("/", async (req, res) => {
             shift: elem.shift,
             rate: elem.rate,
             month: elem.month,
+            contract: elem.contract,
             countDay: elem.countDay
           });
           counetResSuccess += 1;
@@ -91,6 +93,7 @@ let setYearInfo = async () => {
               name: i.name,
               lastName: i.lastName,
               year: yearNow,
+              contract: i.contract,
               $set: {
                 ["month." + monthNow]: {
                   monthRate: i.rate,
@@ -106,6 +109,7 @@ let setYearInfo = async () => {
               name: i.name,
               lastName: i.lastName,
               year: yearNow,
+              contract: i.contract,
               month: {
                 [monthNow]: {
                   monthRate: i.rate,
@@ -121,6 +125,7 @@ let setYearInfo = async () => {
           name: i.name,
           lastName: i.lastName,
           shift: i.shift,
+          contract: i.contract,
           year: yearNow,
           ["month." + monthNow]: {
             monthRate: i.rate,

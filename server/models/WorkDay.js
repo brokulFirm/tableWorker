@@ -8,6 +8,7 @@ const WorkDay = new Schema({
   shift: String,
   rate: Number,
   month: String,
+  contract: String,
   countDay: [String]
 });
 module.exports = mongoose.model("WorkDay", WorkDay, "testworkdays"); //УБРАТЬ ТЕСТЫ ПРИ СБОРКЕ НА ПРОДАКШН

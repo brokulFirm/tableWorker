@@ -25,6 +25,7 @@
           :first-day-of-week="1"
           locale="pl-PL"
           :min="dateNow"
+          :allowed-dates="permittedDates"
           @input="menu1 = false"
         ></v-date-picker>
       </v-menu>
@@ -52,6 +53,7 @@
           :first-day-of-week="1"
           locale="pl-PL"
           :min="dateNow"
+          :allowed-dates="permittedDates"
           @input="menu2 = false"
         ></v-date-picker>
       </v-menu>
@@ -87,18 +89,26 @@
         >
           mdi-check-all
         </v-icon>
-        <v-icon class="mx-3" large v-if="status == 'Error'" color="red">
+        <v-icon class="mx-3" large v-else-if="status == 'Error'" color="red">
           mdi-minus-circle
         </v-icon>
+        <div v-else-if="status == 'HolidayError'" class="holidayError">
+          Maksymalna liczba dni {{ this.getCountVacDay }}
+        </div>
+        <div v-else-if="status == 'HolidayMonth'" class="holidayError">
+          Wybierz urlop w jednym miesiącu
+        </div>
       </div>
     </div>
   </div>
 </template>
 <script>
 import { mapActions, mapGetters } from "vuex";
+import moment from "moment";
+import "twix";
 export default {
   name: "WorkerVac",
-  props: ["worker", "dateNow"],
+  props: ["worker", "dateNow", "getSelected"],
   data: () => ({
     dateStart: "",
     dateEnd: "",
@@ -108,7 +118,11 @@ export default {
     vacationActive: "",
     status: "",
     commentNZ: "",
+    allowedDates: [],
   }),
+  beforeUpdate() {
+    this.getBusyDate();
+  },
   watch: {
     status() {
       if (this.status) {
@@ -122,13 +136,32 @@ export default {
       this.dateEnd = "";
       this.vacationActive = "";
     },
+    getCountVacDay() {
+      if (this.getCountVacDay == 0) {
+        this.vacationType = ["Chorobowy", "Wolny", "NZ"];
+      } else {
+        this.vacationType = ["Urlop", "Chorobowy", "Wolny", "NZ"];
+      }
+      this.getBusyDate();
+    },
   },
   computed: {
     ...mapGetters(["getVacState"]),
+    getCountVacDay() {
+      return this.getVacState.workerVacCount;
+    },
   },
   methods: {
     ...mapActions(["addVacation", "getVacations"]),
     async addNewVacation() {
+      let start = moment(this.dateStart);
+      var end = moment(this.dateEnd);
+      let result;
+      if (!this.dateEnd) {
+        result = 1;
+      } else {
+        result = end.diff(start, "days") + 1;
+      }
       let vacObj = {
         _id: this.worker._id,
         type: this.vacationActive,
@@ -141,7 +174,27 @@ export default {
         year: this.dateNow.split("-")[0],
         commentNZ: this.commentNZ,
       };
-      await this.addVacation(vacObj);
+      if (this.vacationActive === "Urlop") {
+        if (result > this.getCountVacDay) {
+          this.status = "HolidayError";
+        } else if (
+          this.vacationActive === "Urlop" &&
+          this.dateEnd &&
+          this.dateEnd.split("-")[1] != this.dateStart.split("-")[1]
+        ) {
+          this.status = "HolidayMonth";
+        } else {
+          await this.addVacation(vacObj);
+        }
+      } else if (!this.vacationActive || !this.dateStart) {
+        this.status = "Error";
+      } else {
+        await this.addVacation(vacObj);
+      }
+      if (this.dateStart == this.dateNow) {
+        //Передаем ИД для удаления из таблицы если день выходного совпадает с настоящей датой
+        this.getSelected(this.worker._id);
+      }
       this.getVacations();
       if (this.getVacState.submitStatus == "Success") {
         this.status = "Success";
@@ -153,11 +206,57 @@ export default {
       this.vacationActive = "";
       this.commentNZ = "";
     },
+    permittedDates(val) {
+      if (this.allowedDates.indexOf(val) !== -1) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+    getBusyDate() {
+      //Собирает все даты выходных для ограничения в календаре
+      let worker = this.getVacState.allVacation.find(
+        (i) => i._id == this.worker._id
+      );
+      this.allowedDates = [];
+      if (worker && worker.holidays.length) {
+        worker.holidays.forEach((i) => {
+          if (i.start >= this.dateNow) this.pushDate(i);
+        });
+      }
+      if (worker && worker.sickLeave.length) {
+        worker.sickLeave.forEach((i) => {
+          if (i.start >= this.dateNow) this.pushDate(i);
+        });
+      }
+      if (worker && worker.dayOff.length) {
+        worker.dayOff.forEach((i) => {
+          if (i.start >= this.dateNow) this.pushDate(i);
+        });
+      }
+    },
+    pushDate(elem) {
+      //Определяет разницу в датах и заполянет массив с занятыми датами
+      let end = elem.end;
+      if (!elem.end) {
+        end = elem.start;
+      }
+      let itr = moment
+        .twix(new Date(elem.start), new Date(end))
+        .iterate("days");
+      while (itr.hasNext()) {
+        this.allowedDates.push(itr.next().format("YYYY-MM-DD"));
+      }
+    },
   },
 };
 </script>
 <style lang="scss" scoped>
 .selected {
   max-width: 250px;
+}
+.holidayError {
+  color: red;
+  font-weight: 400;
 }
 </style>

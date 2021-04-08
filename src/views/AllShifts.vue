@@ -1,7 +1,10 @@
 <template>
   <div class="allShifts">
     <HeaderTable />
-    <SummaryTable :Workers="getShift" />
+    <SummaryTable
+      :Workers="getShift"
+      :holidays="getState.vacation.allVacation"
+    />
   </div>
 </template>
 
@@ -16,11 +19,12 @@ export default {
     SummaryTable,
   },
   created() {
+    this.getVacations("Wyniki");
     this.getWorkersInYear();
     this.setShift("AllShift");
   },
   methods: {
-    ...mapActions(["getWorkersInYear", "setShift"]),
+    ...mapActions(["getWorkersInYear", "setShift", "getVacations"]),
   },
   computed: {
     ...mapGetters(["getState"]),

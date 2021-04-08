@@ -1,5 +1,6 @@
 const express = require("express");
 const routerVacation = express.Router();
+var moment = require("moment");
 
 const Vacation = require("../models/Vacation");
 
@@ -63,19 +64,20 @@ routerVacation.put("/", async (req, res) => {
 const vacationSort = elem => {
   let vacationType;
   if (elem.type === "Urlop") {
-    let startDay = elem.start.split("-")[2];
-    let endDay = elem.end.split("-")[2];
-    if (startDay.split("")[0] == "0") {
-      startDay = startDay.split("")[1];
+    let start = moment(elem.start);
+    var end = moment(elem.end);
+    let result;
+    if (!elem.end) {
+      result = 1;
+    } else {
+      result = end.diff(start, "days") + 1;
     }
-    if (endDay.split("")[0] == "0") {
-      endDay = endDay.split("")[1];
-    }
+
     vacationType = {
       holidays: {
         start: elem.start,
         end: elem.end,
-        countDay: Number(endDay) - Number(startDay)
+        countDay: result
       }
     };
   } else if (elem.type === "Wolny") {
@@ -111,5 +113,12 @@ const vacationSort = elem => {
   };
   return vacObj;
 };
+
+// Для чистки БД(удаляет все сразу)
+// Vacation.deleteMany({}, function(err, result) {
+//   if (err) return console.log("ERROR", err);
+
+//   console.log("SUCCESS", result);
+// });
 
 module.exports = routerVacation;

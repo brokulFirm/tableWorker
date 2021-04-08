@@ -8,6 +8,7 @@ const WorkDayInYear = new Schema({
   shift: String,
   rate: Number,
   year: String,
+  contract: String,
   month: {}
 });
 module.exports = mongoose.model(

@@ -28,6 +28,7 @@ export default {
     async removeWorkerInYear({ commit }, payload) {
       commit("deleteWorkerInYear", payload);
       await axios.delete(`${hostName}/api/workdaydinyear/${payload._id}`);
+      await axios.delete(`${hostName}/api/vacation/${payload._id}`);
     }
   }
 };

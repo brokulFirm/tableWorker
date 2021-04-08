@@ -86,13 +86,12 @@ export default {
     printPresent() {
       const newWindow = window.open();
       let stylesMain = "h3{ margin-left: 250px; }";
-      let test = this.present.map((i) => {
+      let present = this.present.map((i) => {
         return "<li>" + i.name + " " + i.lastName + "</li>";
       });
       let html = "<ol>";
-      html += test.join(" ");
+      html += present.join(" ");
       html += "</ol>";
-      console.log(test);
       newWindow.document.write(`<style>${stylesMain}</style>`);
       newWindow.document.write('<div class="print">');
       newWindow.document.write(`<h3>W prace ${this.date}:</h3>`);
@@ -104,13 +103,12 @@ export default {
     printOut() {
       const newWindow = window.open();
       let stylesMain = "h3{ margin-left: 250px; }";
-      let test = this.outPlanned.map((i) => {
+      let out = this.outPlanned.map((i) => {
         return "<li>" + i.name + " " + i.lastName + "</li>";
       });
       let html = "<ol>";
-      html += test.join(" ");
+      html += out.join(" ");
       html += "</ol>";
-      console.log(test);
       newWindow.document.write(`<style>${stylesMain}</style>`);
       newWindow.document.write('<div class="print">');
       newWindow.document.write(`<h3>Wolny ${this.date}:</h3>`);

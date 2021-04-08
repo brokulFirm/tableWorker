@@ -12,9 +12,15 @@ export default {
     vacPlanned: [],
     sickLeave: [],
     holidays: [],
-    dayOff: []
+    dayOff: [],
+    notPlanned: [],
+    workerVacCount: ""
   },
   mutations: {
+    setCountVac(state, payload) {
+      state.workerVacCount = "";
+      state.workerVacCount = payload;
+    },
     setSubmitStatus(state, payload) {
       state.submitStatus = payload;
       setTimeout(() => {
@@ -37,6 +43,9 @@ export default {
         if (elem.holidays.length) {
           sortVac(state, payload, elem, "holidays");
         }
+        if (elem.notPlanned.length) {
+          sortVac(state, payload, elem, "notPlanned");
+        }
       }
     },
     showVacation(state, payload) {
@@ -45,23 +54,26 @@ export default {
         vacSort = payload.data.filter(i => {
           return i.shift === "Noc";
         });
-      }
-      if (payload.shift === "Day") {
+      } else if (payload.shift === "Day") {
         vacSort = payload.data.filter(i => {
           return i.shift === "Dzień";
         });
+      } else {
+        vacSort = payload.data;
       }
       state.allVacation = vacSort;
     }
   },
   actions: {
-    async getVacations({ commit, rootState }) {
+    async getVacations({ commit, rootState }, payload) {
       await axios.get(`${hostName}/api/vacation`).then(res => {
         commit("showVacation", {
           shift: rootState.shift,
           data: res.data
         });
-        commit("sortForType", rootState.selectedDate);
+        if (!payload) {
+          commit("sortForType", rootState.selectedDate);
+        }
       });
     },
     async addVacation({ commit, state }, payload) {
@@ -82,6 +94,7 @@ export default {
       state.dayOff = [];
       state.holidays = [];
       state.sickLeave = [];
+      state.notPlanned = [];
       state.vacPlanned = [];
       state.vacNow = [];
       commit("setSubmitStatus", response);
