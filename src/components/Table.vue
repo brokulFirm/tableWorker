@@ -21,6 +21,7 @@
               :worker="item"
               :dateNow="selectedDate"
               :getSelected="getSelected"
+              :outputId="outputId"
             />
             <v-divider vertical></v-divider>
             <WorkerInfo :worker="item" />
@@ -49,9 +50,8 @@
             <div class="warn">
               <h3>UWAGA!!!</h3>
               <p>
-                Najpierw usuń pracowników i dodaj nowych !!!! Następnie zaznacz,
-                kogo nie ma !!!! Jeśli zauważysz jakieś błędy, zrób zdjęcie i
-                daj mi znać. !!!!
+                Teraz możesz w razie potrzeby usunąć urlopy i chorobowe. Nie
+                możesz usunąć tylko aktualnych urlopów.
               </p>
             </div>
             <v-spacer></v-spacer>
@@ -225,7 +225,11 @@
 
     <div class="footerTable mt-5 justify-space-around">
       <TodoList :shift="shift" :todos="todos" />
-      <Vacation :dateNow="selectedDate" :shift="shift" />
+      <Vacation
+        :dateNow="selectedDate"
+        :shift="shift"
+        :getSelected="getSelected"
+      />
       <div class="alerts">
         <v-alert color="blue-grey" border="right" dark max-width="400"
           >Wszystkich pracownikow w zmianie: {{ workers.length }} --- Dziś jest
@@ -305,6 +309,7 @@ export default {
     expanded: [],
     output: [],
     selectedDate: "",
+    prevDate: "",
     dateStart: "",
     disComfirm: false,
     selectedAllCount: 0,
@@ -414,10 +419,36 @@ export default {
 
       return nowMonth;
     },
+    getOutpuId() {
+      //Блокирует строку таблицы работника который находиться в отпуске
+      let outId = [];
+      this.vacation.forEach((i) => {
+        outId.push(i._id);
+      });
+      return outId;
+    },
+    getOutput() {
+      //Показываем отстутвующих работников на данный момент
+      let outPutArr = this.workers.filter(
+        (e) => this.selected.findIndex((i) => i._id == e._id) === -1
+      );
+      let outPutName = [];
+      for (let worker of outPutArr) {
+        outPutName.push(worker.name + " " + worker.lastName);
+      }
+      return outPutName;
+    },
   },
   watch: {
+    getOutpuId() {
+      this.outputId = this.getOutpuId;
+      if (this.prevDate != this.selectedDate) {
+        this.getSelected();
+      }
+      this.prevDate = this.selectedDate;
+    },
     selected() {
-      this.getOutput();
+      this.output = this.getOutput;
     },
     submitStatus() {
       this.disComfirm = false;
@@ -433,10 +464,10 @@ export default {
       }
     },
     selectedDate() {
+      this.setSelectedDate(this.selectedDate);
       this.monthName = this.getMonth;
       this.alertText = "";
       this.dateStart = this.selectedDate;
-      this.setSelectedDate(this.selectedDate);
       this.getSelected();
     },
     dialog(val) {
@@ -456,6 +487,7 @@ export default {
     this.getDateNow();
     this.selectedDate = this.dates[0];
     this.setSelectedDate(this.selectedDate);
+    this.prevDate = this.selectedDate;
   },
 
   methods: {
@@ -466,6 +498,7 @@ export default {
       "setWorker",
       "removeWorker",
       "setSelectedDate",
+      "getVacations",
     ]),
     selectAllRedact() {
       //Временное решения проблемы добавления заблокированых работников в селектед
@@ -478,17 +511,6 @@ export default {
         this.selected = [];
         this.selectedAllCount = 0;
       }
-    },
-    getOutput() {
-      //Показываем отстутвующих работников на данный момент
-      let outPutArr = this.workers.filter(
-        (e) => this.selected.findIndex((i) => i._id == e._id) === -1
-      );
-      let outPutName = [];
-      for (let worker of outPutArr) {
-        outPutName.push(worker.name + " " + worker.lastName);
-      }
-      this.output = outPutName;
     },
     getDateNow() {
       //Получаем 2 даты для выбора в селекте(сегодня и вчера)
@@ -516,6 +538,7 @@ export default {
       this.dates = [nowDate, yestDate];
     },
     initialize() {
+      //Определяем список работников
       if (this.workers.length && this.workers.length < this.Workers.length) {
         this.workers = this.Workers;
         this.selected.push(this.Workers.reverse()[0]); //При добавлении нового работника, отмечаем его как присутствующего
@@ -523,21 +546,24 @@ export default {
         this.workers = this.Workers;
       }
     },
-    getSelected(payload) {
-      this.outputId = [];
-      this.vacation.forEach((i) => {
-        this.outputId.push(i._id);
-      });
+    getSelected(payload, message) {
+      //Определяем список работников которые присутствуют
       let vacArr = this.workers.filter(
         (e) => this.vacation.findIndex((i) => i._id == e._id) === -1
       );
-      if (payload) {
-        this.selected = this.selected.filter((i) => i._id != payload);
+      if (message) {
+        if (message === "RemoveSelected") {
+          this.selected = this.selected.filter((i) => i._id != payload);
+        } else if (message === "AddSelected") {
+          let addedWorker = this.workers.find((i) => i._id == payload);
+          this.selected.push(addedWorker);
+        }
       } else {
         this.selected = vacArr;
       }
     },
     editItem(item) {
+      //Редактирование данных определенного работника
       this.redactMode = true;
       this.editedIndex = this.workers.indexOf(item);
       this.editedItem = Object.assign({}, item);
@@ -545,6 +571,7 @@ export default {
     },
 
     deleteItem(item) {
+      //Выбераем работника для удаления
       this.redactMode = false;
       this.editedIndex = this.workers.indexOf(item);
       this.editedItem = Object.assign({}, item);
@@ -552,6 +579,7 @@ export default {
     },
 
     deleteItemConfirm() {
+      //Подтверждение удаления работника
       this.removeWorker(this.editedItem);
       this.text = "Usunełeś pracownika z tablicy!";
       this.snackbarType = "warning";
@@ -560,6 +588,7 @@ export default {
     },
 
     close() {
+      //Закрытие всплывающих окон для удаления, добавления и редактирования работника
       this.redactMode = false;
       this.dialog = false;
       this.$nextTick(() => {
@@ -570,6 +599,7 @@ export default {
     },
 
     closeDelete() {
+      //Кнопка отмены удаления
       this.dialogDelete = false;
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
@@ -578,6 +608,7 @@ export default {
     },
 
     async save() {
+      //Сохранение отредактированных данных работника
       if (this.editedIndex > -1) {
         this.$refs.form.validate();
         if (this.selected.findIndex((i) => i._id === this.editedItem._id) != -1)
@@ -598,6 +629,7 @@ export default {
         }
         this.getWorkers();
       } else {
+        //Сохранение нового работника
         if (this.shift === "Day") this.editedItem.shift = "Dzień";
         if (this.shift === "Night") this.editedItem.shift = "Noc";
         this.editedItem.startDate = this.dateStart;
@@ -618,6 +650,7 @@ export default {
       this.close();
     },
     async confirmDay() {
+      //Подтверждение рабочего дня
       this.disComfirm = true;
       let arrCount = [];
       for (let elem of this.selected) {
@@ -664,8 +697,9 @@ export default {
   display: flex;
 }
 .warn {
+  text-align: center;
   padding: 0px;
-  background: rgb(255, 215, 163);
+  background: rgb(179, 252, 85);
   max-width: 600px;
   p {
     font-size: 14px;

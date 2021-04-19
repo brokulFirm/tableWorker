@@ -40,12 +40,14 @@ export default {
       return this.getState.selectedDate;
     },
     getShift() {
+      //Определяем список работников только по дневной смене
       let workers = this.getState.worker.workers.filter((i) => {
         return i.shift == "Dzień";
       });
       return workers;
     },
     getTodos() {
+      //Определяем заметки только по дневной смене
       let todoList = this.getState.notice.todos.filter((i) => {
         return i.shift == "Day";
       });

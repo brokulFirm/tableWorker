@@ -321,6 +321,7 @@ export default {
       "setShift",
     ]),
     getDateNow() {
+      //Определяем выбранную дату
       let date = new Date();
       let day = date.getDate();
       let month = date.getMonth();
@@ -336,6 +337,7 @@ export default {
     },
 
     initialize() {
+      //Подготовка данных работника для итоговой таблицы
       let workersList = [];
       for (let worker of this.Workers) {
         if (

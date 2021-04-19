@@ -8,17 +8,17 @@ const Vacation = require("../models/Vacation");
 routerVacation.get("/", async (req, res) => {
   res.status(200).json(await Vacation.find());
 });
-routerVacation.delete("/:id", async (req, res) => {
+routerVacation.put("/:id", async (req, res) => {
   try {
-    await Vacation.findByIdAndRemove(req.params.id, req.body, function(
-      err,
-      data
-    ) {
-      if (!err) {
-        console.log("Deleted");
-      }
-    });
-    res.writeHead(200, "Deleted", { "Content-Type": "text/plain" });
+    let typeVac = req.body.type;
+    let startVac = req.body.start;
+    let endVac = req.body.end;
+    await Vacation.findByIdAndUpdate(
+      { _id: req.body._id },
+      { $pull: { [typeVac]: { start: startVac, end: endVac } } }
+    );
+    console.log('VACATION UPDETED')
+    res.writeHead(200, "Updated", { "Content-Type": "text/plain" });
     res.end();
   } catch {
     res.writeHead(404, "ERROR", { "Content-Type": "text/plain" });

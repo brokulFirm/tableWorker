@@ -25,6 +25,23 @@
                 v-text="child.title"
               ></v-list-item-subtitle>
             </v-list-item-content>
+            <v-list-item-action>
+              <v-btn
+                :disabled="
+                  child.vacInfo.type == 'holidays' &&
+                  child.vacInfo.start <= dateNow &&
+                  child.vacInfo.end >= dateNow
+                "
+                class="mx-2"
+                @click="deleteVac(child.vacInfo)"
+                icon
+                outlined
+                x-small
+                color="error"
+              >
+                <v-icon dark> mdi-minus </v-icon>
+              </v-btn>
+            </v-list-item-action>
           </v-list-item>
         </v-list-group>
       </v-list>
@@ -35,7 +52,7 @@
 import { mapActions, mapGetters } from "vuex";
 export default {
   name: "Vacation",
-  props: ["dateNow", "shift"],
+  props: ["dateNow", "shift", "getSelected"],
   data: () => ({
     vacType: [
       {
@@ -86,8 +103,20 @@ export default {
     },
   },
   methods: {
-    ...mapActions(["getVacations"]),
+    ...mapActions(["getVacations", "removeVacation"]),
+    async deleteVac(item) {
+      //Удаление отпуска или запланированного выходного у работника
+      await this.removeVacation(item);
+      this.getVacations();
+      if (
+        (item.start <= this.dateNow && item.end && item.end >= this.dateNow) ||
+        (item.start <= this.dateNow && !item.end)
+      ) {
+        this.getSelected(item._id, "AddSelected");
+      }
+    },
     createTitle(elem, index, title) {
+      //Подготовка данных о отпусках (Работник,даты,тип выходного)
       let vacArr = [];
       let sortArr = elem.sort((a, b) => {
         var c = new Date(a.start);
@@ -117,6 +146,7 @@ export default {
               (vac.end ? " --- " + vac.end + ")" : ")") +
               " " +
               typeName,
+            vacInfo: vac,
           });
         } else {
           vacArr.push({
@@ -127,6 +157,7 @@ export default {
               " (" +
               vac.start +
               (vac.end ? " --- " + vac.end + ")" : ")"),
+            vacInfo: vac,
           });
         }
       }

@@ -39,6 +39,7 @@ export default {
   computed: {
     ...mapGetters(["getVacState"]),
     getHolidays() {
+      //Определяем количество  отпускных дней у работника
       let workerVac = this.getVacState.allVacation.find(
         (i) => i._id == this.worker._id
       );
@@ -54,6 +55,7 @@ export default {
   methods: {
     ...mapMutations(["setCountVac"]),
     chekVacLeft() {
+      //Определяем количество оставшихся отпускных дней у работника
       this.vacLeft = this.worker.vacDay - this.getHolidays;
       if (this.vacLeft === 0) {
         this.vacLeft = "0";

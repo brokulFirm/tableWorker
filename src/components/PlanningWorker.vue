@@ -22,16 +22,26 @@
           @change="menu1 = false"
         ></v-date-picker>
       </v-menu>
-      <v-row>
-        <v-col>
-          <v-btn elevation="2" color="success" @click="printPresent"
+      <v-row justify="space-around" align="center">
+        <div>
+          <v-btn
+            :disabled="!date"
+            elevation="2"
+            color="success"
+            @click="printPresent"
             >W pracę</v-btn
           >
-        </v-col>
-        <v-col>Drukuj</v-col>
-        <v-col>
-          <v-btn elevation="2" color="success" @click="printOut">Wolne</v-btn>
-        </v-col>
+        </div>
+        <div><h3>Drukuj</h3></div>
+        <div>
+          <v-btn
+            :disabled="!date"
+            elevation="2"
+            color="success"
+            @click="printOut"
+            >Wolne</v-btn
+          >
+        </div>
       </v-row>
     </v-card>
   </div>
@@ -67,6 +77,7 @@ export default {
   computed: {
     ...mapGetters(["getVacState"]),
     getVacation() {
+      //Определяем список работников отсутстующих для планирование списка людей на определенную дату
       let newVacArr;
       if (this.getVacState.vacNow && this.getVacState.vacPlanned) {
         newVacArr = this.getVacState.vacNow.concat(this.getVacState.vacPlanned);
@@ -84,6 +95,7 @@ export default {
   },
   methods: {
     printPresent() {
+      //Кнопка для печати работников которые запланированы как присутствующие
       const newWindow = window.open();
       let stylesMain = "h3{ margin-left: 250px; }";
       let present = this.present.map((i) => {
@@ -101,6 +113,7 @@ export default {
       newWindow.close();
     },
     printOut() {
+      //Кнопка для печати работников которые запланированы как отсутствующие
       const newWindow = window.open();
       let stylesMain = "h3{ margin-left: 250px; }";
       let out = this.outPlanned.map((i) => {

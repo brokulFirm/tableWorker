@@ -108,7 +108,7 @@ import moment from "moment";
 import "twix";
 export default {
   name: "WorkerVac",
-  props: ["worker", "dateNow", "getSelected"],
+  props: ["worker", "dateNow", "getSelected", "outputId"],
   data: () => ({
     dateStart: "",
     dateEnd: "",
@@ -137,7 +137,7 @@ export default {
       this.vacationActive = "";
     },
     getCountVacDay() {
-      if (this.getCountVacDay == 0) {
+      if (this.getCountVacDay == 0 || !this.worker.vacDay) {
         this.vacationType = ["Chorobowy", "Wolny", "NZ"];
       } else {
         this.vacationType = ["Urlop", "Chorobowy", "Wolny", "NZ"];
@@ -154,6 +154,7 @@ export default {
   methods: {
     ...mapActions(["addVacation", "getVacations"]),
     async addNewVacation() {
+      //Добавление отпуска, выходного, больничного работнику с определением даты и типа выходного
       let start = moment(this.dateStart);
       var end = moment(this.dateEnd);
       let result;
@@ -193,7 +194,8 @@ export default {
       }
       if (this.dateStart == this.dateNow) {
         //Передаем ИД для удаления из таблицы если день выходного совпадает с настоящей датой
-        this.getSelected(this.worker._id);
+        this.getSelected(this.worker._id, "RemoveSelected");
+        this.outputId.push(this.worker._id);
       }
       this.getVacations();
       if (this.getVacState.submitStatus == "Success") {

@@ -2,7 +2,7 @@
   <div class="main">
     <div class="start">
       <h1>Witam! Wprowadz kod swojej tablicy do URL</h1>
-      <h3>Przyklad: http://192.1.168.35:5050/<b>Twoj adres</b></h3>
+      <h3>Przyklad: http://3.124.205.189:4040//<b>Twoj adres</b></h3>
     </div>
     <div class="img"><img src="../assets/brokulSport.jpg" /></div>
   </div>

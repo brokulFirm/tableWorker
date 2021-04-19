@@ -29,6 +29,7 @@ export default {
   computed: {
     ...mapGetters(["getState"]),
     getShift() {
+      //Определяем список работников по выбранной смене
       let workers;
       if (this.getState.shift === "Day") {
         workers = this.getState.workDayInYear.workers.filter((i) => {

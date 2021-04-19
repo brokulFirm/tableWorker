@@ -28,6 +28,7 @@ export default {
       }, 1000);
     },
     sortForType(state, payload) {
+      //Сортируем по видам выходных дней
       state.vacNow = [];
       state.vacPlanned = [];
       state.sickLeave = [];
@@ -98,6 +99,10 @@ export default {
       state.vacPlanned = [];
       state.vacNow = [];
       commit("setSubmitStatus", response);
+    },
+    async removeVacation({ commit }, payload) {
+      commit("deleteVac", payload);
+      await axios.put(`${hostName}/api/vacation/${payload._id}`, payload);
     }
   },
   getters: {
@@ -107,6 +112,7 @@ export default {
   }
 };
 
+//Функция для сортировки по типам
 const sortVac = (state, date, elem, vacTitle) => {
   elem[vacTitle].forEach(i => {
     let start = new Date(i.start);
