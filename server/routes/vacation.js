@@ -13,11 +13,39 @@ routerVacation.put("/:id", async (req, res) => {
     let typeVac = req.body.type;
     let startVac = req.body.start;
     let endVac = req.body.end;
-    await Vacation.findByIdAndUpdate(
-      { _id: req.body._id },
-      { $pull: { [typeVac]: { start: startVac, end: endVac } } }
-    );
-    console.log('VACATION UPDETED')
+    if (req.body.title == "ChangeVac") {
+      //Если есть титул то заменяем выходные на отпуск
+      let start = moment(startVac);
+      var end = moment(endVac);
+      let result;
+      if (!endVac) {
+        result = 1;
+      } else {
+        result = end.diff(start, "days") + 1;
+      }
+      //Удаляем выходной день из БД
+      await Vacation.findByIdAndUpdate(
+        { _id: req.body._id },
+        { $pull: { dayOff: { start: startVac, end: endVac } } }
+      );
+      //Добавляем отпуск в указаные дни
+      await Vacation.findByIdAndUpdate(
+        { _id: req.body._id },
+        {
+          $push: {
+            holidays: { start: startVac, end: endVac, countDay: result }
+          }
+        }
+      );
+      console.log("DAYOFF CHANGE");
+    } else {
+      await Vacation.findByIdAndUpdate(
+        { _id: req.body._id },
+        { $pull: { [typeVac]: { start: startVac, end: endVac } } }
+      );
+      console.log("VACATION DELETED");
+    }
+
     res.writeHead(200, "Updated", { "Content-Type": "text/plain" });
     res.end();
   } catch {
@@ -42,8 +70,8 @@ routerVacation.put("/", async (req, res) => {
         };
         await Vacation.findByIdAndUpdate(req.body._id, newYear);
         await Vacation.findByIdAndUpdate(req.body._id, newVac);
-        console.log("UPDATED");
       }
+      console.log("UPDATED");
     } else {
       const record = new Vacation({ _id: req.body._id });
       await record.save();

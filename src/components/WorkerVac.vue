@@ -22,6 +22,7 @@
         </template>
         <v-date-picker
           v-model="dateStart"
+          :picker-date="dateNow"
           :first-day-of-week="1"
           locale="pl-PL"
           :min="dateNow"
@@ -50,6 +51,7 @@
         </template>
         <v-date-picker
           v-model="dateEnd"
+          :picker-date="dateNow"
           :first-day-of-week="1"
           locale="pl-PL"
           :min="dateNow"

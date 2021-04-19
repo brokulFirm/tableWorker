@@ -24,7 +24,7 @@
               :outputId="outputId"
             />
             <v-divider vertical></v-divider>
-            <WorkerInfo :worker="item" />
+            <WorkerInfo :worker="item" :dateNow="selectedDate" />
           </div>
         </td>
       </template>
@@ -39,7 +39,7 @@
       <template v-slot:top>
         <div class="headerTable">
           <v-toolbar flat>
-            <v-toolbar-title
+            <v-toolbar-title class="ml-10"
               ><b
                 >Zmiana
                 {{ shift && shift == "Day" ? "Dzienna" : "Nocna" }}
@@ -47,21 +47,13 @@
               ></v-toolbar-title
             >
             <v-spacer></v-spacer>
-            <div class="warn">
-              <h3>UWAGA!!!</h3>
-              <p>
-                Teraz możesz w razie potrzeby usunąć urlopy i chorobowe. Nie
-                możesz usunąć tylko aktualnych urlopów.
-              </p>
-            </div>
-            <v-spacer></v-spacer>
             <v-dialog v-model="dialog" max-width="500px">
               <template v-slot:activator="{ on, attrs }">
                 <v-btn
                   elevation="11"
                   color="teal"
                   dark
-                  class="mb-2"
+                  class="mb-2 mr-10"
                   v-bind="attrs"
                   v-on="on"
                 >
@@ -695,15 +687,5 @@ export default {
 }
 .footerTable {
   display: flex;
-}
-.warn {
-  text-align: center;
-  padding: 0px;
-  background: rgb(179, 252, 85);
-  max-width: 600px;
-  p {
-    font-size: 14px;
-    line-height: 1;
-  }
 }
 </style>
