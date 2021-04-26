@@ -8,6 +8,9 @@ const WorkDay = require("../models/WorkDay");
 routerWorkDayInYear.get("/", async (req, res) => {
   res.status(200).json(await WorkDayInYear.find());
 });
+routerWorkDayInYear.get("/:id", async (req, res) => {
+  res.status(200).json(await WorkDayInYear.findById(req.params.id));
+});
 routerWorkDayInYear.delete("/:id", async (req, res) => {
   try {
     await WorkDayInYear.findByIdAndRemove(req.params.id, req.body, function(
